@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>洛克王国孵蛋查询</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #333;
+            --text-sub: #666;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+            flex: 1;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        #results {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .result-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .result-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-range {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--text-sub);
+            padding: 20px;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* PC端微调 */
+        @media (min-width: 600px) {
+            .container {
+                padding: 30px;
+            }
+            .card {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>孵蛋查询</h1>
+            <div class="input-group">
+                <label for="sizeInput">尺寸 (如: 0.26 或 26)</label>
+                <input type="number" id="sizeInput" placeholder="请输入尺寸" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="weightInput">重量 (如: 2.28)</label>
+                <input type="number" id="weightInput" placeholder="请输入重量" step="0.01">
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="performSearch()">查询</button>
+                <button class="btn-secondary" onclick="clearResults()">清空</button>
+            </div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // 数据源
+        const petData = [
+            { name: "鸭吉吉", sizeMin: 0.36, sizeMax: 0.38, weightMin: 6.42, weightMax: 6.727 },
+            { name: "板板壳", sizeMin: 0.21, sizeMax: 0.304, weightMin: 3, weightMax: 4.2 },
+            { name: "电狐", sizeMin: 0.21, sizeMax: 0.38, weightMin: 6.238, weightMax: 6.355 },
+            { name: "迷迷眼", sizeMin: 0.18, sizeMax: 0.21, weightMin: 1.364, weightMax: 1.789 },
+            { name: "小灵菇", sizeMin: 0.25, sizeMax: 0.25, weightMin: 2.827, weightMax: 2.84 },
+            { name: "石砖侠", sizeMin: 0.28, sizeMax: 0.28, weightMin: 12.252, weightMax: 13.6 },
+            { name: "布石兽", sizeMin: 0.168, sizeMax: 0.24, weightMin: 7.4, weightMax: 7.5 },
+            { name: "恶魔叮", sizeMin: 0.156, sizeMax: 0.224, weightMin: 1.44, weightMax: 2.08 },
+            { name: "毛毛", sizeMin: 0.14, sizeMax: 0.18, weightMin: 1.2, weightMax: 1.8 },
+            { name: "幽影树", sizeMin: 0.31, sizeMax: 0.368, weightMin: 12.01, weightMax: 15 },
+            { name: "小鼠獭", sizeMin: 0.17, sizeMax: 0.212, weightMin: 2.506, weightMax: 3 },
+            { name: "矿晶贝", sizeMin: 0.216, sizeMax: 0.308, weightMin: 2.32, weightMax: 4.212 },
+            { name: "奇丽草", sizeMin: 0.18, sizeMax: 0.23, weightMin: 1.706, weightMax: 2.204 },
+            { name: "丢丢", sizeMin: 0.15, sizeMax: 0.204, weightMin: 1.519, weightMax: 2.44 },
+            { name: "护主犬", sizeMin: 0.28, sizeMax: 0.33, weightMin: 5.076, weightMax: 6.038 },
+            { name: "绿耳松鼠", sizeMin: 0.188, sizeMax: 0.272, weightMin: 1.4, weightMax: 2.4 },
+            { name: "嘟嘟猫", sizeMin: 0.31, sizeMax: 0.33, weightMin: 19.926, weightMax: 21.456 },
+            { name: "小灵鹿", sizeMin: 0.16, sizeMax: 0.22, weightMin: 0.036, weightMax: 0.057 },
+            { name: "梦游", sizeMin: 0.25, sizeMax: 0.25, weightMin: 0.4, weightMax: 0.748 },
+            { name: "雪花兽", sizeMin: 0.152, sizeMax: 0.18, weightMin: 1.7, weightMax: 2.6 },
+            { name: "伏地兽", sizeMin: 0.208, sizeMax: 0.296, weightMin: 4.96, weightMax: 6.32 },
+            { name: "蹦蹦种子", sizeMin: 0.21, sizeMax: 0.28, weightMin: 1.636, weightMax: 2.24 },
+            { name: "电咩咩", sizeMin: 0.25, sizeMax: 0.34, weightMin: 2.578, weightMax: 3.604 },
+            { name: "蒲公英", sizeMin: 0.13, sizeMax: 0.2, weightMin: 0.038, weightMax: 0.106 },
+            { name: "伊贝儿", sizeMin: 0.176, sizeMax: 0.248, weightMin: 1.32, weightMax: 1.68 },
+            { name: "白发懒人", sizeMin: 0.36, sizeMax: 0.412, weightMin: 7.957, weightMax: 9.4 },
+            { name: "海盗鼠", sizeMin: 0.26, sizeMax: 0.28, weightMin: 3.077, weightMax: 3.44 },
+            { name: "菊花梨", sizeMin: 0.33, sizeMax: 0.36, weightMin: 1.967, weightMax: 2.32 },
+            { name: "小稻稻", sizeMin: 0.312, sizeMax: 0.448, weightMin: 11, weightMax: 14.48 },
+            { name: "一窝蜂", sizeMin: 0.19, sizeMax: 0.208, weightMin: 1.851, weightMax: 2.12 },
+            { name: "小蜜蜂", sizeMin: 0.23, sizeMax: 0.29, weightMin: 1.886, weightMax: 2.79 },
+            { name: "歪歪鸟", sizeMin: 0.23, sizeMax: 0.27, weightMin: 1.738, weightMax: 2.05 },
+            { name: "馒头蟹", sizeMin: 0.63, sizeMax: 0.63, weightMin: 25.539, weightMax: 26.32 },
+            { name: "绿芽精灵", sizeMin: 0.32, sizeMax: 0.41, weightMin: 3.415, weightMax: 4.029 },
+            { name: "记忆石", sizeMin: 0.44, sizeMax: 0.57, weightMin: 33.61, weightMax: 43.575 },
+            { name: "咔咔羽毛", sizeMin: 0.248, sizeMax: 0.356, weightMin: 1.048, weightMax: 1.56 },
+            { name: "小草虫", sizeMin: 0.188, sizeMax: 0.268, weightMin: 0.84, weightMax: 1.36 },
+            { name: "绿草虫", sizeMin: 0.21, sizeMax: 0.244, weightMin: 1.35, weightMax: 1.92 },
+            { name: "阿米亚特", sizeMin: 0.25, sizeMax: 0.31, weightMin: 14.618, weightMax: 18.153 },
+            { name: "风铃蛙", sizeMin: 0.17, sizeMax: 0.19, weightMin: 4.697, weightMax: 5.134 },
+            { name: "石王", sizeMin: 0.12, sizeMax: 0.21, weightMin: 21.405, weightMax: 29.626 },
+            { name: "火云神", sizeMin: 0.18, sizeMax: 0.232, weightMin: 7.62, weightMax: 14.02 },
+            { name: "小独角兽", sizeMin: 0.45, sizeMax: 0.59, weightMin: 15.95, weightMax: 22.234 },
+            { name: "绿叶虫", sizeMin: 0.05, sizeMax: 0.06, weightMin: 0.072, weightMax: 0.34 },
+            { name: "小黑猫", sizeMin: 0.22, sizeMax: 0.26, weightMin: 1.24, weightMax: 1.8 },
+            { name: "多多", sizeMin: 0.19, sizeMax: 0.25, weightMin: 5.21, weightMax: 6.85 },
+            { name: "哭哭菇", sizeMin: 0.15, sizeMax: 0.17, weightMin: 0.802, weightMax: 0.977 },
+            { name: "恶魔猪", sizeMin: 0.59, sizeMax: 0.73, weightMin: 29.725, weightMax: 36.615 },
+            { name: "小电企鹅", sizeMin: 0.23, sizeMax: 0.23, weightMin: 2.078, weightMax: 2.156 },
+            { name: "雪豆丁", sizeMin: 0.344, sizeMax: 0.492, weightMin: 3.8, weightMax: 5 },
+            { name: "呼呼猪", sizeMin: 0.3, sizeMax: 0.3, weightMin: 3.401, weightMax: 3.56 },
+            { name: "雪娃娃", sizeMin: 0.13, sizeMax: 0.17, weightMin: 2.589, weightMax: 3.223 },
+            { name: "大耳帽兜", sizeMin: 0.17, sizeMax: 0.2, weightMin: 3.216, weightMax: 4.144 },
+            { name: "灵狐", sizeMin: 0.29, sizeMax: 0.3, weightMin: 3.123, weightMax: 3.179 },
+            { name: "小浣熊", sizeMin: 0.18, sizeMax: 0.24, weightMin: 1, weightMax: 1.576 },
+            { name: "小必达", sizeMin: 0.31, sizeMax: 0.336, weightMin: 8.146, weightMax: 9 },
+            { name: "小狐狸", sizeMin: 0.31, sizeMax: 0.4, weightMin: 4.309, weightMax: 6.526 },
+            { name: "圆眼蜘蛛", sizeMin: 0.192, sizeMax: 0.272, weightMin: 1.4, weightMax: 2 },
+            { name: "波波拉", sizeMin: 0.15, sizeMax: 0.168, weightMin: 1.895, weightMax: 2.26 },
+            { name: "豆豆龙", sizeMin: 0.13, sizeMax: 0.14, weightMin: 0.477, weightMax: 1.104 },
+            { name: "斑斑", sizeMin: 0.188, sizeMax: 0.24, weightMin: 1.916, weightMax: 2.468 },
+            { name: "草头鸭", sizeMin: 0.23, sizeMax: 0.27, weightMin: 1.999, weightMax: 2.357 },
+            { name: "海豹战士", sizeMin: 0.28, sizeMax: 0.34, weightMin: 26, weightMax: 31.078 },
+            { name: "导火儿", sizeMin: 0.13, sizeMax: 0.15, weightMin: 1.419, weightMax: 1.688 },
+            { name: "甜田田", sizeMin: 0.164, sizeMax: 0.232, weightMin: 3, weightMax: 3.76 },
+            { name: "棋棋", sizeMin: 0.19, sizeMax: 0.19, weightMin: 5.306, weightMax: 5.8 },
+            { name: "奔波儿灞", sizeMin: 0.23, sizeMax: 0.24, weightMin: 2.126, weightMax: 2.56 },
+            { name: "呆小路", sizeMin: 0.25, sizeMax: 0.27, weightMin: 1.624, weightMax: 1.718 },
+            { name: "逗逗", sizeMin: 0.13, sizeMax: 0.16, weightMin: 0.216, weightMax: 0.612 },
+            { name: "花脸猴", sizeMin: 0.25, sizeMax: 0.27, weightMin: 1.019, weightMax: 1.319 },
+            { name: "伊雷龙", sizeMin: 0.288, sizeMax: 0.376, weightMin: 10.88, weightMax: 13.6 },
+            { name: "拉特", sizeMin: 0.196, sizeMax: 0.244, weightMin: 3.08, weightMax: 3.44 },
+            { name: "闪电环", sizeMin: 0.16, sizeMax: 0.184, weightMin: 0.847, weightMax: 1.313 },
+            { name: "小萌怪", sizeMin: 0.18, sizeMax: 0.184, weightMin: 2.479, weightMax: 2.724 },
+            { name: "古钟蛇", sizeMin: 0.44, sizeMax: 0.44, weightMin: 2.857, weightMax: 3.12 },
+            { name: "矮蹄鹿", sizeMin: 0.14, sizeMax: 0.18, weightMin: 1.327, weightMax: 1.654 },
+            { name: "火尾瓦特", sizeMin: 0.27, sizeMax: 0.38, weightMin: 6.612, weightMax: 8.425 },
+            { name: "里里", sizeMin: 0.44, sizeMax: 0.44, weightMin: 18, weightMax: 19.8 },
+            { name: "海枝枝", sizeMin: 0.33, sizeMax: 0.34, weightMin: 1.881, weightMax: 2.373 },
+            { name: "多西", sizeMin: 0.26, sizeMax: 0.376, weightMin: 2.28, weightMax: 2.84 },
+            { name: "小翼龙", sizeMin: 0.32, sizeMax: 0.348, weightMin: 12.146, weightMax: 14.6 },
+            { name: "电动长颈鹿", sizeMin: 0.32, sizeMax: 0.4, weightMin: 11.249, weightMax: 17.72 },
+            { name: "小萌", sizeMin: 0.1, sizeMax: 0.144, weightMin: 0.56, weightMax: 0.88 },
+            { name: "刺刺蛇", sizeMin: 0.1, sizeMax: 0.124, weightMin: 1.207, weightMax: 1.6 },
+            { name: "豆丁鱼", sizeMin: 0.13, sizeMax: 0.18, weightMin: 0.437, weightMax: 0.587 },
+            { name: "胆小菇", sizeMin: 0.43, sizeMax: 0.43, weightMin: 10.145, weightMax: 10.74 },
+            { name: "翡翠水母", sizeMin: 0.196, sizeMax: 0.28, weightMin: 12.6, weightMax: 14.72 },
+            { name: "浪浪", sizeMin: 0.28, sizeMax: 0.4, weightMin: 3, weightMax: 5 },
+            { name: "可奥奥", sizeMin: 0.276, sizeMax: 0.392, weightMin: 8.4, weightMax: 12.6 },
+            { name: "布鲁斯", sizeMin: 0.212, sizeMax: 0.304, weightMin: 0.96, weightMax: 1.84 },
+            { name: "治愈兔", sizeMin: 0.24, sizeMax: 0.27, weightMin: 4.221, weightMax: 4.713 },
+            { name: "乌达", sizeMin: 0.2, sizeMax: 0.23, weightMin: 1.756, weightMax: 2.44 },
+            { name: "螺旋桨帕帕", sizeMin: 0.15, sizeMax: 0.18, weightMin: 0.812, weightMax: 1.74 },
+            { name: "机械方方", sizeMin: 0.168, sizeMax: 0.24, weightMin: 3.2, weightMax: 4.4 },
+            { name: "叮叮猫", sizeMin: 0.17, sizeMax: 0.21, weightMin: 1.665, weightMax: 2.435 },
+            { name: "伏地兽", sizeMin: 0.152, sizeMax: 0.224, weightMin: 1.212, weightMax: 1.636 },
+            { name: "嘟嘟鸟", sizeMin: 0.8, sizeMax: 0.86, weightMin: 35.8, weightMax: 51 },
+            { name: "深蓝啾啾", sizeMin: 0.8, sizeMax: 1.06, weightMin: 258, weightMax: 280 },
+            { name: "格兰种子", sizeMin: 0.16, sizeMax: 0.228, weightMin: 1.4, weightMax: 2.16 },
+            { name: "地狱犬", sizeMin: 0.184, sizeMax: 0.264, weightMin: 0.72, weightMax: 1.14 },
+            { name: "黑骑士", sizeMin: 0.14, sizeMax: 0.184, weightMin: 1.3, weightMax: 2.008 },
+            { name: "小甲虫", sizeMin: 0.27, sizeMax: 0.27, weightMin: 3.147, weightMax: 3.36 },
+            { name: "圣剑侍从", sizeMin: 0.376, sizeMax: 0.472, weightMin: 46.28, weightMax: 69.44 },
+            { name: "吸吸猴", sizeMin: 0.22, sizeMax: 0.284, weightMin: 3.8, weightMax: 5 },
+            { name: "大头骨龙", sizeMin: 0.39, sizeMax: 0.4, weightMin: 9.636, weightMax: 13.4 },
+            { name: "厉害小罗", sizeMin: 0.22, sizeMax: 0.26, weightMin: 3.492, weightMax: 5.968 },
+            { name: "小帕尔", sizeMin: 0.28, sizeMax: 0.3, weightMin: 3.609, weightMax: 3.94 },
+            { name: "毛球小蛛", sizeMin: 0.12, sizeMax: 0.18, weightMin: 0.38, weightMax: 0.8 },
+            { name: "画精灵", sizeMin: 0.112, sizeMax: 0.152, weightMin: 0.396, weightMax: 0.884 },
+            { name: "书魔虫", sizeMin: 0.12, sizeMax: 0.164, weightMin: 0.912, weightMax: 1.544 },
+            { name: "绒绒", sizeMin: 0.116, sizeMax: 0.14, weightMin: 0.4, weightMax: 1 },
+            { name: "犀角兽", sizeMin: 0.128, sizeMax: 0.16, weightMin: 3.84, weightMax: 4.6 },
+            { name: "果冻", sizeMin: 0.12, sizeMax: 0.144, weightMin: 1.74, weightMax: 2.24 },
+            { name: "星光虫", sizeMin: 0.06, sizeMax: 0.08, weightMin: 0.18, weightMax: 0.56 },
+            { name: "双灯鱼", sizeMin: 0.2, sizeMax: 0.288, weightMin: 5.96, weightMax: 7.12 },
+            { name: "月牙月狐", sizeMin: 0.55, sizeMax: 0.58, weightMin: 29.24, weightMax: 37 },
+            { name: "增光喵喵", sizeMin: 0.096, sizeMax: 0.128, weightMin: 0.584, weightMax: 1.22 },
+            { name: "柴洛鱼", sizeMin: 0.19, sizeMax: 0.22, weightMin: 5.165, weightMax: 7.44 },
+            { name: "空空侠", sizeMin: 0.172, sizeMax: 0.244, weightMin: 2.24, weightMax: 3.48 },
+            { name: "粉粉星", sizeMin: 0.32, sizeMax: 0.32, weightMin: 1.15, weightMax: 1.2 },
+            { name: "贝瑟", sizeMin: 0.228, sizeMax: 0.328, weightMin: 9.8, weightMax: 13.84 },
+            { name: "粉圆仔", sizeMin: 0.18, sizeMax: 0.19, weightMin: 3.976, weightMax: 4.136 },
+            { name: "布瓜蝌蚪", sizeMin: 0.128, sizeMax: 0.204, weightMin: 0.18, weightMax: 0.66 },
+            { name: "火红尾", sizeMin: 0.46, sizeMax: 0.56, weightMin: 10.417, weightMax: 14.148 },
+            { name: "春团", sizeMin: 0.14, sizeMax: 0.204, weightMin: 0.84, weightMax: 1.44 }
+        ];
+
+        // 执行搜索
+        function performSearch() {
+            const sizeInput = document.getElementById('sizeInput').value.trim();
+            const weightInput = document.getElementById('weightInput').value.trim();
+            const resultsDiv = document.getElementById('results');
+
+            // 清除上一次的结果
+            resultsDiv.innerHTML = '';
+
+            if (!sizeInput && !weightInput) {
+                resultsDiv.innerHTML = '<div class="no-results">请输入尺寸或重量进行查询</div>';
+                return;
+            }
+
+            // 处理尺寸输入逻辑
+            let targetSize = 0;
+            if (sizeInput) {
+                const val = parseFloat(sizeInput);
+                if (val >= 1) {
+                    // 如果是整数输入（如14），视为0.14
+                    targetSize = val / 100;
+                } else {
+                    // 如果是小数输入（如0.14），保持原样
+                    targetSize = val;
+                }
+            }
+
+            // 处理重量输入
+            const targetWeight = weightInput ? parseFloat(weightInput) : null;
+
+            // 过滤数据
+            const filtered = petData.filter(pet => {
+                let sizeMatch = true;
+                let weightMatch = true;
+
+                if (sizeInput) {
+                    // 尺寸必须在范围内
+                    sizeMatch = targetSize >= pet.sizeMin && targetSize <= pet.sizeMax;
+                }
+
+                if (weightInput) {
+                    // 重量必须在范围内
+                    weightMatch = targetWeight >= pet.weightMin && targetWeight <= pet.weightMax;
+                }
+
+                return sizeMatch && weightMatch;
+            });
+
+            // 显示结果
+            if (filtered.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">未找到符合条件的精灵</div>';
+            } else {
+                filtered.forEach(pet => {
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    item.innerHTML = `
+                        <div class="result-name">${pet.name}</div>
+                        <div class="result-range">
+                            尺寸: ${pet.sizeMin} - ${pet.sizeMax}<br>
+                            重量: ${pet.weightMin} - ${pet.weightMax}
+                        </div>
+                    `;
+                    resultsDiv.appendChild(item);
+                });
+            }
+        }
+
+        // 清空输入和结果
+        function clearResults() {
+            document.getElementById('sizeInput').value = '';
+            document.getElementById('weightInput').value = '';
+            document.getElementById('results').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
