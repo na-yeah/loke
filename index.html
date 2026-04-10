@@ -1,167 +1,907 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>洛克王国孵蛋查询</title>
-<style>
-/* --- 样式部分保持不变 (CSS) --- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-:root { 
-  --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #ec4899; --accent: #f59e0b; 
-  --bg-gradient-1: #0f172a; --bg-gradient-2: #1e1b4b; --bg-gradient-3: #312e81; 
-  --card-bg: rgba(255, 255, 255, 0.95); --card-bg-dark: rgba(30, 41, 59, 0.8); 
-  --text-main: #1e293b; --text-light: #f8fafc; --text-sub: #64748b; 
-  --border-color: rgba(255, 255, 255, 0.2); --shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5); --radius: 16px; --radius-sm: 12px; 
-}
-body { 
-  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; 
-  background: linear-gradient(135deg, var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-gradient-3)); 
-  background-size: 400% 400%; animation: gradientShift 15s ease infinite; 
-  color: var(--text-main); min-height: 100vh; padding: 20px; position: relative; overflow-x: hidden; 
-}
-body::before { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; 
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); pointer-events: none; z-index: -1; }
-@keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-.container { max-width: 800px; margin: 0 auto; position: relative; z-index: 1; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>洛克王国助手 - 孵蛋查询 & 蛋组查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* 标题部分 */
-.header { text-align: center; margin-bottom: 30px; padding: 20px 0; }
-.header h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--text-light); text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 700; }
-.header-icon { font-size: 2rem; animation: bounce 2s infinite; }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-.header p { color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; letter-spacing: 1px; }
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #f59e0b;
+            --bg-gradient-1: #0f172a;
+            --bg-gradient-2: #1e1b4b;
+            --bg-gradient-3: #312e81;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-bg-dark: rgba(30, 41, 59, 0.8);
+            --text-main: #1e293b;
+            --text-light: #f8fafc;
+            --text-sub: #64748b;
+            --border-color: rgba(255, 255, 255, 0.2);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5);
+            --radius: 16px;
+            --radius-sm: 12px;
+        }
 
-/* 主卡片 - 毛玻璃效果 */
-.card { background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 30px; margin-bottom: 25px; position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; }
-.card:hover { transform: translateY(-2px); box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6); }
-.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent)); background-size: 200% 100%; animation: shimmer 3s linear infinite; }
-@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-gradient-3));
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-/* 输入组样式 */
-.input-group { margin-bottom: 24px; position: relative; }
-label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
-.input-wrapper { position: relative; }
-input[type="number"] { width: 100%; padding: 14px 16px; padding-left: 45px; border: 2px solid #e2e8f0; border-radius: var(--radius-sm); font-size: 1.05rem; background: rgba(255, 255, 255, 0.8); color: var(--text-main); transition: all 0.3s ease; outline: none; font-family: inherit; }
-input[type="number"]:hover { border-color: #cbd5e1; background: rgba(255, 255, 255, 0.95); }
-input[type="number"]:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); transform: translateY(-1px); }
-.input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; opacity: 0.6; pointer-events: none; transition: all 0.3s; }
-input:focus+.input-icon, input:hover+.input-icon { opacity: 1; color: var(--primary); }
-.input-hint { font-size: 0.8rem; color: var(--text-sub); margin-top: 6px; padding-left: 4px; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
 
-/* 按钮组 */
-.btn-group { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 30px; }
-button { padding: 14px 24px; border: none; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; }
-button::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
-button:active::before { width: 300px; height: 300px; }
-button:active { transform: scale(0.98); }
-.btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); background: linear-gradient(135deg, var(--primary), var(--secondary)); }
-.btn-secondary { background: rgba(255, 255, 255, 0.9); color: var(--text-sub); border: 2px solid #e2e8f0; }
-.btn-secondary:hover { background: #fff; border-color: #cbd5e1; color: var(--text-main); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-/* 结果区域 */
-#results { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-.result-item { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: var(--radius-sm); padding: 20px; box-shadow: var(--shadow); border-left: 5px solid var(--primary); animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); position: relative; overflow: hidden; transition: all 0.3s ease; }
-.result-item:nth-child(1) { animation-delay: 0.05s; border-left-color: var(--primary); }
-.result-item:nth-child(2) { animation-delay: 0.1s; border-left-color: var(--secondary); }
-.result-item:nth-child(3) { animation-delay: 0.15s; border-left-color: var(--accent); }
-.result-item:nth-child(4) { animation-delay: 0.2s; border-left-color: #10b981; }
-.result-item:nth-child(5) { animation-delay: 0.25s; border-left-color: #8b5cf6; }
-.result-item:nth-child(n+6) { animation-delay: 0.3s; }
-@keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
-.result-item:hover { transform: translateX(5px) scale(1.01); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); }
-.result-item::after { content: '✨'; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 1.5rem; opacity: 0; transition: opacity 0.3s; }
-.result-item:hover::after { opacity: 0.3; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
 
-/* --- 新增或修改的样式：链接样式 --- */
-.result-name { 
-  font-size: 1.25rem; 
-  font-weight: 700; 
-  color: var(--text-main); 
-  margin-bottom: 8px; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
-  cursor: pointer; /* 鼠标悬停变为手型 */
-  transition: color 0.2s ease;
-}
-.result-name:hover {
-  color: var(--primary); /* 悬停时文字变色 */
-  text-decoration: underline; /* 悬停时加下划线 */
-}
-.result-name::before { content: '🥚'; font-size: 1.1rem; }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px 0;
+        }
 
-.result-range { font-size: 0.9rem; color: var(--text-sub); line-height: 1.6; display: grid; gap: 4px; }
-.range-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; color: var(--primary-dark); font-weight: 500; }
+        .header h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            color: var(--text-light);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-weight: 700;
+        }
 
-/* 空状态 */
-.no-results { text-align: center; padding: 50px 20px; color: rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: var(--radius); border: 2px dashed rgba(255, 255, 255, 0.2); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
-.no-results-icon { font-size: 3rem; margin-bottom: 15px; display: block; }
-.no-results-text { font-size: 1.1rem; font-weight: 500; }
+        .header-icon {
+            font-size: 2rem;
+            animation: bounce 2s infinite;
+        }
 
-/* 统计信息 */
-.stats-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: var(--radius-sm); margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); color: white; font-size: 0.9rem; }
-.stats-count { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
 
-/* 响应式设计 */
-@media (max-width: 640px) { 
-  body { padding: 15px; padding-bottom: 30px; } 
-  .card { padding: 20px; } 
-  .btn-group { grid-template-columns: 1fr; }
-  button { width: 100%; } 
-  .result-item { padding: 15px; } 
-  .stats-bar { flex-direction: column; gap: 10px; text-align: center; } 
-}
-@media (min-width: 641px) and (max-width: 1024px) { .container { max-width: 600px; } }
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
 
-/* 滚动条美化 */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
-::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--primary-dark); }
+        .tab-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 8px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+        }
 
-/* 输入框自动填充样式覆盖 */
-input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0px 1000px white inset; transition: background-color 5000s ease-in-out 0s; }
-</style>
+        .tab-btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .tab-btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 30px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            padding-left: 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-size: 1.05rem;
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        input[type="number"]:hover, input[type="text"]:hover {
+            border-color: #cbd5e1;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            opacity: 0.6;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        input:focus + .input-icon, input:hover + .input-icon {
+            opacity: 1;
+            color: var(--primary);
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 6px;
+            padding-left: 4px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-sub);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #fff;
+            border-color: #cbd5e1;
+            color: var(--text-main);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(238, 90, 111, 0.3);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(238, 90, 111, 0.4);
+        }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-item {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:nth-child(1) { animation-delay: 0.05s; border-left-color: var(--primary); }
+        .result-item:nth-child(2) { animation-delay: 0.1s; border-left-color: var(--secondary); }
+        .result-item:nth-child(3) { animation-delay: 0.15s; border-left-color: var(--accent); }
+        .result-item:nth-child(4) { animation-delay: 0.2s; border-left-color: #10b981; }
+        .result-item:nth-child(5) { animation-delay: 0.25s; border-left-color: #8b5cf6; }
+        .result-item:nth-child(n+6) { animation-delay: 0.3s; }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item:hover {
+            transform: translateX(5px) scale(1.01);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .result-item::after {
+            content: '✨';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .result-item:hover::after {
+            opacity: 0.3;
+        }
+
+        .result-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            text-decoration: none;
+        }
+
+        .result-name:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .result-name::before {
+            content: '🥚';
+            font-size: 1.1rem;
+        }
+
+        .result-range {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+            display: grid;
+            gap: 4px;
+        }
+
+        .range-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        .search-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+            font-size: 1.2em;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-hint {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .filter-section h3 {
+            font-size: 0.9em;
+            color: var(--text-sub);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .group-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .group-item {
+            padding: 10px 18px;
+            background: #f1f5f9;
+            border: 2px solid transparent;
+            border-radius: 24px;
+            font-size: 0.9em;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .group-item:hover {
+            background: #e0e7ff;
+            transform: translateY(-1px);
+        }
+
+        .group-item:active {
+            transform: scale(0.95);
+        }
+
+        .group-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: var(--primary-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .stats-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-text {
+            color: var(--text-sub);
+            font-size: 0.95em;
+        }
+
+        .stats-text strong {
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+
+        .results-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pet-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pet-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pet-item:hover {
+            background: white;
+            border-color: var(--primary);
+            transform: translateX(4px);
+            box-shadow: var(--shadow);
+        }
+
+        .pet-item:hover::before {
+            opacity: 1;
+        }
+
+        .pet-item:active {
+            transform: scale(0.98);
+        }
+
+        .pet-id {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 700;
+            margin-right: 16px;
+            min-width: 60px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
+            flex-shrink: 0;
+        }
+
+        .pet-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pet-name {
+            font-size: 1.15em;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pet-groups {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .pet-group-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8em;
+            color: var(--text-sub);
+            background: white;
+            padding: 4px 10px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .pet-group-tag.matched {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border-color: #fcd34d;
+            font-weight: 600;
+        }
+
+        .pet-arrow {
+            color: var(--primary);
+            font-size: 1.5em;
+            margin-left: 12px;
+            opacity: 0.5;
+            transition: all 0.3s;
+            align-self: center;
+        }
+
+        .pet-item:hover .pet-arrow {
+            opacity: 1;
+            transform: translateX(4px);
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fef3c7, #fde68a);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+            color: #92400e;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-sub);
+        }
+
+        .empty-icon {
+            font-size: 4em;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty h3 {
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .no-results-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-sm);
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .stats-count {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 12px; padding-bottom: 30px; }
+            .header h1 { font-size: 1.6em; }
+            .card { padding: 20px; }
+            .btn-group { grid-template-columns: 1fr; }
+            button { width: 100%; }
+            .result-item { padding: 15px; }
+            .stats-bar { flex-direction: column; gap: 10px; text-align: center; }
+            .tab-btn { padding: 12px 16px; font-size: 0.9rem; }
+            .search-card { padding: 16px; }
+            .group-item { padding: 8px 14px; font-size: 0.85em; }
+            .pet-item { padding: 14px; }
+            .pet-id { min-width: 50px; padding: 6px 10px; }
+            .pet-name { font-size: 1.05em; }
+            .pet-group-tag { font-size: 0.75em; padding: 3px 8px; }
+        }
+
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .container { max-width: 600px; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-dark); }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px white inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+    </style>
+    <base target="_blank">
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <h1><span class="header-icon">🎮</span> 洛克王国孵蛋查询</h1>
-    <p>点击精灵名字可跳转至百科详情</p> <!-- 提示文案微调 -->
-  </div>
-  <div class="card">
-    <div class="input-group">
-      <label for="sizeInput">📏 尺寸</label>
-      <div class="input-wrapper">
-        <input type="number" id="sizeInput" placeholder="请输入尺寸（如: 0.26 或 26）" step="0.01">
-        <span class="input-icon">📐</span>
-      </div>
-      <div class="input-hint">支持小数（0.26）或整数（26）格式，整数会自动转换为小数</div>
-    </div>
-    <div class="input-group">
-      <label for="weightInput">⚖️ 重量</label>
-      <div class="input-wrapper">
-        <input type="number" id="weightInput" placeholder="请输入重量（如: 2.28）" step="0.01">
-        <span class="input-icon">🏋️</span>
-      </div>
-      <div class="input-hint">输入精灵蛋的重量数值</div>
-    </div>
-    <div class="btn-group">
-      <button class="btn-primary" onclick="performSearch()">🔍 开始查询</button>
-      <button class="btn-secondary" onclick="clearResults()">🗑️ 清空</button>
-    </div>
-  </div>
-  <div id="results"></div>
-</div>
+    <div class="container">
+        <div class="header">
+            <h1><span class="header-icon">🎮</span> 洛克王国助手</h1>
+            <p>孵蛋查询 & 蛋组查询 - 点击结果跳转百科</p>
+        </div>
 
-<script>
-// --- JavaScript 部分：修改了 performSearch 函数 ---
-// 数据源（保持原数据不变）
-    const petData = [
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('hatch', this)">🥚 孵蛋查询</button>
+            <button class="tab-btn" onclick="switchTab('pedia', this)">📖 蛋组查询</button>
+        </div>
+
+        <div id="hatch-tab" class="tab-content active">
+            <div class="card">
+                <div class="input-group">
+                    <label for="sizeInput">📏 尺寸</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sizeInput" placeholder="请输入尺寸（如: 0.26 或 26）" step="0.01">
+                        <span class="input-icon">📐</span>
+                    </div>
+                    <div class="input-hint">支持小数（0.26）或整数（26）格式，整数会自动转换为小数</div>
+                </div>
+                <div class="input-group">
+                    <label for="weightInput">⚖️ 重量</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="weightInput" placeholder="请输入重量（如: 2.28）" step="0.01">
+                        <span class="input-icon">🏋️</span>
+                    </div>
+                    <div class="input-hint">输入精灵蛋的重量数值</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="performSearch()">🔍 开始查询</button>
+                    <button class="btn-secondary" onclick="clearResults()">🗑️ 清空</button>
+                </div>
+            </div>
+            <div id="hatch-results" class="results-container"></div>
+        </div>
+
+        <div id="pedia-tab" class="tab-content">
+            <div class="search-card">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="searchInput" placeholder="输入名称或编号查询...">
+                    <span class="search-hint" id="searchHint">名称</span>
+                </div>
+
+                <div class="filter-section">
+                    <h3>📂 选择组别（单选）</h3>
+                    <div class="group-list" id="groupList">
+                        <div class="group-item active" data-group="">全部</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <span class="stats-text">共找到 <strong id="showCount">0</strong> 只宠物</span>
+                <button class="reset-btn" onclick="clearFilter()">🔄 重置</button>
+            </div>
+
+            <div class="results-card">
+                <div class="pet-list" id="petList">
+                    <div class="empty">
+                        <div class="empty-icon">📋</div>
+                        <h3>暂无数据</h3>
+                        <p>请在下方 petData 变量中添加宠物数据</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 标签页切换功能
+        // ============================================
+        function switchTab(tabName, btnElement) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            if (tabName === 'pedia' && !window.pediaInitialized) {
+                initPedia();
+                window.pediaInitialized = true;
+            }
+        }
+
+        // ============================================
+        // 孵蛋查询数据（请在此填入数据）
+        // 格式: { name: '宠物名', sizeMin: 最小尺寸, sizeMax: 最大尺寸, weightMin: 最小重量, weightMax: 最大重量 }
+        // ============================================
+        // const hatchData = [
+        //     // 请在此添加孵蛋数据
+        //     // 示例: { name: '鸭吉吉', sizeMin: 0.36, sizeMax: 0.38, weightMin: 6.42, weightMax: 6.727 },
+        // ];
+            const hatchData = [
             { name: '鸭吉吉', sizeMin: 0.36, sizeMax: 0.38, weightMin: 6.42, weightMax: 6.727 },
             { name: '板板壳', sizeMin: 0.21, sizeMax: 0.304, weightMin: 3, weightMax: 4.2 },
             { name: '锥尾羊', sizeMin: 0.33, sizeMax: 0.33, weightMin: 6.238, weightMax: 6.345 },
@@ -289,101 +1029,3581 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
             { name: '春团', sizeMin: 0.14, sizeMax: 0.204, weightMin: 0.84, weightMax: 1.44 }
         ];
 
-// 执行搜索
-function performSearch() {
-  const sizeInput = document.getElementById('sizeInput').value.trim();
-  const weightInput = document.getElementById('weightInput').value.trim();
-  const resultsDiv = document.getElementById('results');
-  
-  // 清除上一次的结果
-  resultsDiv.innerHTML = '';
-  
-  if (!sizeInput && !weightInput) {
-    resultsDiv.innerHTML = '<div class="no-results"><span class="no-results-icon">🔍</span><div class="no-results-text">请输入尺寸或重量进行查询</div></div>';
-    return;
-  }
-  
-  // 处理尺寸输入逻辑
-  let targetSize = 0;
-  if (sizeInput) {
-    const val = parseFloat(sizeInput);
-    if (val >= 1) {
-      // 如果是整数输入（如14），视为0.14
-      targetSize = val / 100;
-    } else {
-      // 如果是小数输入（如0.14），保持原样
-      targetSize = val;
-    }
-  }
-  
-  // 处理重量输入
-  const targetWeight = weightInput ? parseFloat(weightInput) : null;
-  
-  // 过滤数据
-  const filtered = petData.filter(pet => {
-    let sizeMatch = true;
-    let weightMatch = true;
-    if (sizeInput) {
-      // 尺寸必须在范围内
-      sizeMatch = targetSize >= pet.sizeMin && targetSize <= pet.sizeMax;
-    }
-    if (weightInput) {
-      // 重量必须在范围内
-      weightMatch = targetWeight >= pet.weightMin && targetWeight <= pet.weightMax;
-    }
-    return sizeMatch && weightMatch;
-  });
-  
-  // 显示结果
-  if (filtered.length === 0) {
-    resultsDiv.innerHTML = '<div class="no-results"><span class="no-results-icon">😕</span><div class="no-results-text">未找到符合条件的精灵</div></div>';
-  } else {
-    // 添加统计条
-    const statsBar = document.createElement('div');
-    statsBar.className = 'stats-bar';
-    statsBar.innerHTML = ` 
-      <span>查询结果</span> 
-      <span>找到 <span class="stats-count">${filtered.length}</span> 个精灵</span> 
-    `;
-    resultsDiv.appendChild(statsBar);
-    
-    filtered.forEach(pet => {
-      const item = document.createElement('div');
-      item.className = 'result-item';
-      
-      // --- 修改点：将名字改为可点击的链接 ---
-      // 点击时在新标签页打开 biligame wiki
-      item.innerHTML = ` 
-        <a href="https://wiki.biligame.com/rocom/${encodeURIComponent(pet.name)}" target="_blank" class="result-name" onclick="event.stopPropagation()">
-          ${pet.name} ↗
-        </a>
-        <div class="result-range"> 
-          <div><span class="range-tag">📏 尺寸: ${pet.sizeMin} - ${pet.sizeMax}</span></div> 
-          <div><span class="range-tag">⚖️ 重量: ${pet.weightMin} - ${pet.weightMax}</span></div> 
-        </div> 
-      `;
-      
-      resultsDiv.appendChild(item);
-    });
-  }
-}
 
-// 清空输入和结果（逻辑保持原样）
-function clearResults() {
-  document.getElementById('sizeInput').value = '';
-  document.getElementById('weightInput').value = '';
-  document.getElementById('results').innerHTML = '';
-}
+        function performSearch() {
+            const sizeInput = document.getElementById('sizeInput').value.trim();
+            const weightInput = document.getElementById('weightInput').value.trim();
+            const resultsDiv = document.getElementById('hatch-results');
+            
+            resultsDiv.innerHTML = '';
+            
+            if (!sizeInput && !weightInput) {
+                resultsDiv.innerHTML = '<div class="no-results"><span class="no-results-icon">🔍</span><div class="no-results-text">请输入尺寸或重量进行查询</div></div>';
+                return;
+            }
 
-// 添加回车键支持
-document.addEventListener('DOMContentLoaded', function () {
-  document.getElementById('sizeInput').addEventListener('keypress', function (e) { 
-    if (e.key === 'Enter') performSearch(); 
-  });
-  document.getElementById('weightInput').addEventListener('keypress', function (e) { 
-    if (e.key === 'Enter') performSearch(); 
-  });
-});
-</script>
+            if (hatchData.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results"><span class="no-results-icon">📝</span><div class="no-results-text">无匹配精灵</div></div>';
+                return;
+            }
+            
+            let targetSize = 0;
+            if (sizeInput) {
+                const val = parseFloat(sizeInput);
+                targetSize = val >= 1 ? val / 100 : val;
+            }
+            
+            const targetWeight = weightInput ? parseFloat(weightInput) : null;
+            
+            const filtered = hatchData.filter(pet => {
+                let sizeMatch = true;
+                let weightMatch = true;
+                if (sizeInput) {
+                    sizeMatch = targetSize >= pet.sizeMin && targetSize <= pet.sizeMax;
+                }
+                if (weightInput) {
+                    weightMatch = targetWeight >= pet.weightMin && targetWeight <= pet.weightMax;
+                }
+                return sizeMatch && weightMatch;
+            });
+            
+            if (filtered.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results"><span class="no-results-icon">😕</span><div class="no-results-text">未找到符合条件的精灵</div></div>';
+            } else {
+                const statsBar = document.createElement('div');
+                statsBar.className = 'stats-bar';
+                statsBar.innerHTML = `
+                    <span>查询结果</span>
+                    <span>找到 <span class="stats-count">${filtered.length}</span> 个精灵</span>
+                `;
+                resultsDiv.appendChild(statsBar);
+                
+                filtered.forEach(pet => {
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    item.innerHTML = `
+                        <a href="https://wiki.biligame.com/rocom/${encodeURIComponent(pet.name)}" target="_blank" class="result-name" onclick="event.stopPropagation()">
+                            ${pet.name} ↗
+                        </a>
+                        <div class="result-range">
+                            <div><span class="range-tag">📏 尺寸: ${pet.sizeMin} - ${pet.sizeMax}</span></div>
+                            <div><span class="range-tag">⚖️ 重量: ${pet.weightMin} - ${pet.weightMax}</span></div>
+                        </div>
+                    `;
+                    resultsDiv.appendChild(item);
+                });
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('sizeInput').value = '';
+            document.getElementById('weightInput').value = '';
+            document.getElementById('hatch-results').innerHTML = '';
+        }
+
+        // ============================================
+        // 宠物图鉴数据（请在此填入数据）
+        // 格式: { "id": 编号, "name": "宠物名", "group": "组别" }
+        // 同一宠物多个组别可重复添加，会自动合并显示
+        // ============================================
+               const petData = [
+  {
+    "id": 1,
+    "name": "迪莫",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 2,
+    "name": "喵喵",
+    "group": "动物组"
+  },
+  {
+    "id": 2,
+    "name": "喵喵",
+    "group": "拟人组"
+  },
+  {
+    "id": 3,
+    "name": "喵呜",
+    "group": "动物组"
+  },
+  {
+    "id": 3,
+    "name": "喵呜",
+    "group": "拟人组"
+  },
+  {
+    "id": 4,
+    "name": "魔力猫",
+    "group": "动物组"
+  },
+  {
+    "id": 4,
+    "name": "魔力猫",
+    "group": "拟人组"
+  },
+  {
+    "id": 5,
+    "name": "火花",
+    "group": "巨灵组"
+  },
+  {
+    "id": 5,
+    "name": "火花",
+    "group": "魔力组"
+  },
+  {
+    "id": 6,
+    "name": "焰火",
+    "group": "巨灵组"
+  },
+  {
+    "id": 6,
+    "name": "焰火",
+    "group": "魔力组"
+  },
+  {
+    "id": 7,
+    "name": "火神",
+    "group": "巨灵组"
+  },
+  {
+    "id": 7,
+    "name": "火神",
+    "group": "魔力组"
+  },
+  {
+    "id": 8,
+    "name": "水蓝蓝",
+    "group": "魔力组"
+  },
+  {
+    "id": 9,
+    "name": "波波拉",
+    "group": "魔力组"
+  },
+  {
+    "id": 10,
+    "name": "水灵",
+    "group": "魔力组"
+  },
+  {
+    "id": 11,
+    "name": "鸭吉吉（蓬松的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 11,
+    "name": "鸭吉吉（紧实的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 11,
+    "name": "鸭吉吉（急急鸭）",
+    "group": "天空组"
+  },
+  {
+    "id": 11,
+    "name": "鸭吉吉（等一等鸭）",
+    "group": "天空组"
+  },
+  {
+    "id": 11,
+    "name": "鸭吉吉（起来鸭）",
+    "group": "天空组"
+  },
+  {
+    "id": 11,
+    "name": "鸭吉吉（燃了鸭）",
+    "group": "天空组"
+  },
+  {
+    "id": 12,
+    "name": "板板壳（本来的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 12,
+    "name": "板板壳（蜕皮时的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 13,
+    "name": "咔咔壳（本来的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 13,
+    "name": "咔咔壳（蜕皮时的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 14,
+    "name": "水泡壳（本来的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 14,
+    "name": "水泡壳（蜕皮时的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 15,
+    "name": "锥尾羊",
+    "group": "动物组"
+  },
+  {
+    "id": 16,
+    "name": "铃兰羊",
+    "group": "动物组"
+  },
+  {
+    "id": 17,
+    "name": "花影羚羊",
+    "group": "动物组"
+  },
+  {
+    "id": 18,
+    "name": "雪绒鸟（本来的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 18,
+    "name": "雪绒鸟（春天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 18,
+    "name": "雪绒鸟（夏天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 18,
+    "name": "雪绒鸟（秋天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 19,
+    "name": "冬羽雀（本来的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 19,
+    "name": "冬羽雀（春天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 19,
+    "name": "冬羽雀（夏天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 19,
+    "name": "冬羽雀（秋天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 20,
+    "name": "岚鸟（本来的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 20,
+    "name": "岚鸟（春天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 20,
+    "name": "岚鸟（夏天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 20,
+    "name": "岚鸟（秋天的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 21,
+    "name": "小灵菇",
+    "group": "植物组"
+  },
+  {
+    "id": 21,
+    "name": "小灵菇",
+    "group": "魔力组"
+  },
+  {
+    "id": 22,
+    "name": "幻灵菇",
+    "group": "植物组"
+  },
+  {
+    "id": 22,
+    "name": "幻灵菇",
+    "group": "魔力组"
+  },
+  {
+    "id": 23,
+    "name": "幻影灵菇",
+    "group": "植物组"
+  },
+  {
+    "id": 23,
+    "name": "幻影灵菇",
+    "group": "魔力组"
+  },
+  {
+    "id": 24,
+    "name": "石肤蜥（本来的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 24,
+    "name": "石肤蜥（本来的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 24,
+    "name": "石肤蜥（球球尾巴的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 24,
+    "name": "石肤蜥（球球尾巴的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 25,
+    "name": "石刺蜥（本来的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 25,
+    "name": "石刺蜥（本来的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 25,
+    "name": "石刺蜥（球球尾巴的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 25,
+    "name": "石刺蜥（球球尾巴的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 26,
+    "name": "石冠王蜥（本来的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 26,
+    "name": "石冠王蜥（本来的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 26,
+    "name": "石冠王蜥（球球尾巴的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 26,
+    "name": "石冠王蜥（球球尾巴的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 27,
+    "name": "布是石",
+    "group": "巨灵组"
+  },
+  {
+    "id": 27,
+    "name": "布是石",
+    "group": "大地组"
+  },
+  {
+    "id": 28,
+    "name": "布是岩",
+    "group": "巨灵组"
+  },
+  {
+    "id": 28,
+    "name": "布是岩",
+    "group": "大地组"
+  },
+  {
+    "id": 29,
+    "name": "布克棱岩",
+    "group": "巨灵组"
+  },
+  {
+    "id": 29,
+    "name": "布克棱岩",
+    "group": "大地组"
+  },
+  {
+    "id": 30,
+    "name": "恶魔叮",
+    "group": "妖精组"
+  },
+  {
+    "id": 31,
+    "name": "叮叮恶魔",
+    "group": "妖精组"
+  },
+  {
+    "id": 32,
+    "name": "毛毛",
+    "group": "昆虫组"
+  },
+  {
+    "id": 32,
+    "name": "毛毛",
+    "group": "软体组"
+  },
+  {
+    "id": 33,
+    "name": "爬爬",
+    "group": "昆虫组"
+  },
+  {
+    "id": 33,
+    "name": "爬爬",
+    "group": "软体组"
+  },
+  {
+    "id": 34,
+    "name": "化蝶（平常的样子）",
+    "group": "昆虫组"
+  },
+  {
+    "id": 34,
+    "name": "化蝶（平常的样子）",
+    "group": "软体组"
+  },
+  {
+    "id": 35,
+    "name": "幽影树",
+    "group": "妖精组"
+  },
+  {
+    "id": 35,
+    "name": "幽影树",
+    "group": "植物组"
+  },
+  {
+    "id": 36,
+    "name": "小鼠獭",
+    "group": "两栖组"
+  },
+  {
+    "id": 36,
+    "name": "小鼠獭",
+    "group": "动物组"
+  },
+  {
+    "id": 37,
+    "name": "燕尾獭",
+    "group": "两栖组"
+  },
+  {
+    "id": 37,
+    "name": "燕尾獭",
+    "group": "动物组"
+  },
+  {
+    "id": 38,
+    "name": "卷胡巨獭",
+    "group": "两栖组"
+  },
+  {
+    "id": 38,
+    "name": "卷胡巨獭",
+    "group": "动物组"
+  },
+  {
+    "id": 39,
+    "name": "矿晶虫",
+    "group": "软体组"
+  },
+  {
+    "id": 39,
+    "name": "矿晶虫",
+    "group": "大地组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（西瓜碧玺的样子）",
+    "group": "软体组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（西瓜碧玺的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（莲花刚玉的样子）",
+    "group": "软体组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（莲花刚玉的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（星彩榴石的样子）",
+    "group": "软体组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（星彩榴石的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（火山琉璃的样子）",
+    "group": "软体组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（火山琉璃的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（蓝锥矿的样子）",
+    "group": "软体组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（蓝锥矿的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（烧蓝黄金的样子）",
+    "group": "软体组"
+  },
+  {
+    "id": 40,
+    "name": "晶石蜗（烧蓝黄金的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 41,
+    "name": "奇丽草",
+    "group": "植物组"
+  },
+  {
+    "id": 42,
+    "name": "奇丽叶",
+    "group": "植物组"
+  },
+  {
+    "id": 43,
+    "name": "奇丽花",
+    "group": "植物组"
+  },
+  {
+    "id": 44,
+    "name": "丢丢（草地附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 44,
+    "name": "丢丢（沙地附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 44,
+    "name": "丢丢（雪山附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 45,
+    "name": "卡卡虫（草地附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 45,
+    "name": "卡卡虫（沙地附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 45,
+    "name": "卡卡虫（雪山附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 46,
+    "name": "卡瓦重（草地附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 46,
+    "name": "卡瓦重（沙地附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 46,
+    "name": "卡瓦重（雪山附近的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 47,
+    "name": "护主犬",
+    "group": "动物组"
+  },
+  {
+    "id": 48,
+    "name": "音速犬",
+    "group": "动物组"
+  },
+  {
+    "id": 49,
+    "name": "绿耳松鼠",
+    "group": "动物组"
+  },
+  {
+    "id": 50,
+    "name": "抱枕松鼠",
+    "group": "动物组"
+  },
+  {
+    "id": 51,
+    "name": "蹦床松鼠",
+    "group": "动物组"
+  },
+  {
+    "id": 52,
+    "name": "嘟嘟煲",
+    "group": "妖精组"
+  },
+  {
+    "id": 52,
+    "name": "嘟嘟煲",
+    "group": "大地组"
+  },
+  {
+    "id": 53,
+    "name": "嘟嘟锅",
+    "group": "妖精组"
+  },
+  {
+    "id": 53,
+    "name": "嘟嘟锅",
+    "group": "大地组"
+  },
+  {
+    "id": 54,
+    "name": "小灵面",
+    "group": "魔力组"
+  },
+  {
+    "id": 55,
+    "name": "暗影灵面（睁眼的样子）",
+    "group": "魔力组"
+  },
+  {
+    "id": 55,
+    "name": "暗影灵面（闭眼的样子）",
+    "group": "魔力组"
+  },
+  {
+    "id": 56,
+    "name": "幽冥眼（睁眼的样子）",
+    "group": "魔力组"
+  },
+  {
+    "id": 56,
+    "name": "幽冥眼（闭眼的样子）",
+    "group": "魔力组"
+  },
+  {
+    "id": 57,
+    "name": "梦游（穿旧睡衣的样子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 57,
+    "name": "梦游（穿旧睡衣的样子）",
+    "group": "魔力组"
+  },
+  {
+    "id": 58,
+    "name": "梦悠悠（穿旧睡衣的样子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 58,
+    "name": "梦悠悠（穿旧睡衣的样子）",
+    "group": "魔力组"
+  },
+  {
+    "id": 59,
+    "name": "兽花蕾",
+    "group": "植物组"
+  },
+  {
+    "id": 60,
+    "name": "伏地兽",
+    "group": "动物组"
+  },
+  {
+    "id": 61,
+    "name": "贪食鼹",
+    "group": "动物组"
+  },
+  {
+    "id": 62,
+    "name": "巨噬针鼹",
+    "group": "动物组"
+  },
+  {
+    "id": 63,
+    "name": "蹦蹦种子（海神球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 63,
+    "name": "蹦蹦种子（彩玉球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 63,
+    "name": "蹦蹦种子（短毛球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 63,
+    "name": "蹦蹦种子（象牙球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 64,
+    "name": "蹦蹦草（海神球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 64,
+    "name": "蹦蹦草（彩玉球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 64,
+    "name": "蹦蹦草（短毛球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 64,
+    "name": "蹦蹦草（象牙球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 65,
+    "name": "蹦蹦花（海神球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 65,
+    "name": "蹦蹦花（彩玉球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 65,
+    "name": "蹦蹦花（短毛球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 65,
+    "name": "蹦蹦花（象牙球形态）",
+    "group": "植物组"
+  },
+  {
+    "id": 66,
+    "name": "电咩咩",
+    "group": "动物组"
+  },
+  {
+    "id": 67,
+    "name": "粉咩咩",
+    "group": "动物组"
+  },
+  {
+    "id": 68,
+    "name": "电球咩咩",
+    "group": "动物组"
+  },
+  {
+    "id": 69,
+    "name": "蒲公英",
+    "group": "天空组"
+  },
+  {
+    "id": 69,
+    "name": "蒲公英",
+    "group": "植物组"
+  },
+  {
+    "id": 70,
+    "name": "蒲公英娃娃",
+    "group": "天空组"
+  },
+  {
+    "id": 70,
+    "name": "蒲公英娃娃",
+    "group": "植物组"
+  },
+  {
+    "id": 71,
+    "name": "伊贝儿",
+    "group": "植物组"
+  },
+  {
+    "id": 71,
+    "name": "伊贝儿",
+    "group": "软体组"
+  },
+  {
+    "id": 72,
+    "name": "伊贝粉粉",
+    "group": "植物组"
+  },
+  {
+    "id": 72,
+    "name": "伊贝粉粉",
+    "group": "软体组"
+  },
+  {
+    "id": 73,
+    "name": "白发懒人",
+    "group": "巨灵组"
+  },
+  {
+    "id": 73,
+    "name": "白发懒人",
+    "group": "拟人组"
+  },
+  {
+    "id": 74,
+    "name": "动力猿",
+    "group": "巨灵组"
+  },
+  {
+    "id": 74,
+    "name": "动力猿",
+    "group": "拟人组"
+  },
+  {
+    "id": 75,
+    "name": "瞌睡王",
+    "group": "巨灵组"
+  },
+  {
+    "id": 75,
+    "name": "瞌睡王",
+    "group": "拟人组"
+  },
+  {
+    "id": 76,
+    "name": "海盔虫（本来的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 76,
+    "name": "海盔虫（本来的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 76,
+    "name": "海盔虫（磨损的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 76,
+    "name": "海盔虫（磨损的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 77,
+    "name": "刺盔虫（本来的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 77,
+    "name": "刺盔虫（本来的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 77,
+    "name": "刺盔虫（磨损的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 77,
+    "name": "刺盔虫（磨损的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 78,
+    "name": "千棘盔（本来的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 78,
+    "name": "千棘盔（本来的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 78,
+    "name": "千棘盔（磨损的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 78,
+    "name": "千棘盔（磨损的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 79,
+    "name": "菊花梨",
+    "group": "植物组"
+  },
+  {
+    "id": 80,
+    "name": "小星光（星光能量的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 80,
+    "name": "小星光（月光能量的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 81,
+    "name": "星光狮（星光能量的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 81,
+    "name": "星光狮（月光能量的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 82,
+    "name": "一窝蜂",
+    "group": "昆虫组"
+  },
+  {
+    "id": 82,
+    "name": "一窝蜂",
+    "group": "天空组"
+  },
+  {
+    "id": 83,
+    "name": "黄蜂后",
+    "group": "昆虫组"
+  },
+  {
+    "id": 83,
+    "name": "黄蜂后",
+    "group": "天空组"
+  },
+  {
+    "id": 84,
+    "name": "花魁蜂后",
+    "group": "昆虫组"
+  },
+  {
+    "id": 84,
+    "name": "花魁蜂后",
+    "group": "天空组"
+  },
+  {
+    "id": 85,
+    "name": "小夜",
+    "group": "妖精组"
+  },
+  {
+    "id": 85,
+    "name": "小夜",
+    "group": "拟人组"
+  },
+  {
+    "id": 86,
+    "name": "紫夜",
+    "group": "妖精组"
+  },
+  {
+    "id": 86,
+    "name": "紫夜",
+    "group": "拟人组"
+  },
+  {
+    "id": 87,
+    "name": "朔夜伊芙",
+    "group": "妖精组"
+  },
+  {
+    "id": 87,
+    "name": "朔夜伊芙",
+    "group": "拟人组"
+  },
+  {
+    "id": 88,
+    "name": "乖乖鹄",
+    "group": "两栖组"
+  },
+  {
+    "id": 88,
+    "name": "乖乖鹄",
+    "group": "天空组"
+  },
+  {
+    "id": 89,
+    "name": "蓝珠天鹅",
+    "group": "两栖组"
+  },
+  {
+    "id": 89,
+    "name": "蓝珠天鹅",
+    "group": "天空组"
+  },
+  {
+    "id": 90,
+    "name": "翠顶夫人",
+    "group": "两栖组"
+  },
+  {
+    "id": 90,
+    "name": "翠顶夫人",
+    "group": "天空组"
+  },
+  {
+    "id": 91,
+    "name": "黑羽夫人",
+    "group": "两栖组"
+  },
+  {
+    "id": 91,
+    "name": "黑羽夫人",
+    "group": "天空组"
+  },
+  {
+    "id": 92,
+    "name": "锤头鹳",
+    "group": "两栖组"
+  },
+  {
+    "id": 92,
+    "name": "锤头鹳",
+    "group": "天空组"
+  },
+  {
+    "id": 93,
+    "name": "绿草精灵",
+    "group": "妖精组"
+  },
+  {
+    "id": 93,
+    "name": "绿草精灵",
+    "group": "拟人组"
+  },
+  {
+    "id": 94,
+    "name": "魔草巫灵",
+    "group": "妖精组"
+  },
+  {
+    "id": 94,
+    "name": "魔草巫灵",
+    "group": "拟人组"
+  },
+  {
+    "id": 95,
+    "name": "记忆石",
+    "group": "大地组"
+  },
+  {
+    "id": 96,
+    "name": "咔咔羽毛",
+    "group": "天空组"
+  },
+  {
+    "id": 97,
+    "name": "咔咔雀",
+    "group": "天空组"
+  },
+  {
+    "id": 98,
+    "name": "咔咔鸟",
+    "group": "天空组"
+  },
+  {
+    "id": 99,
+    "name": "小草虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 99,
+    "name": "小草虫",
+    "group": "拟人组"
+  },
+  {
+    "id": 100,
+    "name": "草衣虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 100,
+    "name": "草衣虫",
+    "group": "拟人组"
+  },
+  {
+    "id": 101,
+    "name": "花衣蝶",
+    "group": "昆虫组"
+  },
+  {
+    "id": 101,
+    "name": "花衣蝶",
+    "group": "拟人组"
+  },
+  {
+    "id": 102,
+    "name": "绿翼鸟",
+    "group": "天空组"
+  },
+  {
+    "id": 102,
+    "name": "绿翼鸟",
+    "group": "妖精组"
+  },
+  {
+    "id": 103,
+    "name": "魔翼鸟",
+    "group": "天空组"
+  },
+  {
+    "id": 103,
+    "name": "魔翼鸟",
+    "group": "妖精组"
+  },
+  {
+    "id": 104,
+    "name": "魔眷鸟",
+    "group": "天空组"
+  },
+  {
+    "id": 104,
+    "name": "魔眷鸟",
+    "group": "妖精组"
+  },
+  {
+    "id": 105,
+    "name": "阿米亚特",
+    "group": "巨灵组"
+  },
+  {
+    "id": 105,
+    "name": "阿米亚特",
+    "group": "大地组"
+  },
+  {
+    "id": 106,
+    "name": "阿米樱",
+    "group": "巨灵组"
+  },
+  {
+    "id": 106,
+    "name": "阿米樱",
+    "group": "大地组"
+  },
+  {
+    "id": 107,
+    "name": "罗隐",
+    "group": "巨灵组"
+  },
+  {
+    "id": 107,
+    "name": "罗隐",
+    "group": "大地组"
+  },
+  {
+    "id": 108,
+    "name": "风铃鲨",
+    "group": "天空组"
+  },
+  {
+    "id": 108,
+    "name": "风铃鲨",
+    "group": "海洋组"
+  },
+  {
+    "id": 109,
+    "name": "蓝蝶鲨",
+    "group": "天空组"
+  },
+  {
+    "id": 109,
+    "name": "蓝蝶鲨",
+    "group": "海洋组"
+  },
+  {
+    "id": 110,
+    "name": "彩蝶鲨",
+    "group": "天空组"
+  },
+  {
+    "id": 110,
+    "name": "彩蝶鲨",
+    "group": "海洋组"
+  },
+  {
+    "id": 111,
+    "name": "石石",
+    "group": "大地组"
+  },
+  {
+    "id": 111,
+    "name": "石石",
+    "group": "魔力组"
+  },
+  {
+    "id": 112,
+    "name": "巨灵石",
+    "group": "大地组"
+  },
+  {
+    "id": 112,
+    "name": "巨灵石",
+    "group": "魔力组"
+  },
+  {
+    "id": 113,
+    "name": "仪使者",
+    "group": "妖精组"
+  },
+  {
+    "id": 113,
+    "name": "仪使者",
+    "group": "大地组"
+  },
+  {
+    "id": 114,
+    "name": "仪式之星",
+    "group": "妖精组"
+  },
+  {
+    "id": 114,
+    "name": "仪式之星",
+    "group": "大地组"
+  },
+  {
+    "id": 115,
+    "name": "仪式巨像",
+    "group": "妖精组"
+  },
+  {
+    "id": 115,
+    "name": "仪式巨像",
+    "group": "大地组"
+  },
+  {
+    "id": 116,
+    "name": "小独角兽",
+    "group": "巨灵组"
+  },
+  {
+    "id": 116,
+    "name": "小独角兽",
+    "group": "动物组"
+  },
+  {
+    "id": 117,
+    "name": "白金独角兽",
+    "group": "巨灵组"
+  },
+  {
+    "id": 117,
+    "name": "白金独角兽",
+    "group": "动物组"
+  },
+  {
+    "id": 118,
+    "name": "旋叶虫（金黄的样子）",
+    "group": "昆虫组"
+  },
+  {
+    "id": 118,
+    "name": "旋叶虫（金黄的样子）",
+    "group": "植物组"
+  },
+  {
+    "id": 118,
+    "name": "旋叶虫（枯叶的样子）",
+    "group": "昆虫组"
+  },
+  {
+    "id": 118,
+    "name": "旋叶虫（枯叶的样子）",
+    "group": "植物组"
+  },
+  {
+    "id": 119,
+    "name": "蓬叶虫（金黄的样子）",
+    "group": "昆虫组"
+  },
+  {
+    "id": 119,
+    "name": "蓬叶虫（金黄的样子）",
+    "group": "植物组"
+  },
+  {
+    "id": 119,
+    "name": "蓬叶虫（枯叶的样子）",
+    "group": "昆虫组"
+  },
+  {
+    "id": 119,
+    "name": "蓬叶虫（枯叶的样子）",
+    "group": "植物组"
+  },
+  {
+    "id": 120,
+    "name": "风滚暮虫（金黄的样子）",
+    "group": "昆虫组"
+  },
+  {
+    "id": 120,
+    "name": "风滚暮虫（金黄的样子）",
+    "group": "植物组"
+  },
+  {
+    "id": 120,
+    "name": "风滚暮虫（枯叶的样子）",
+    "group": "昆虫组"
+  },
+  {
+    "id": 120,
+    "name": "风滚暮虫（枯叶的样子）",
+    "group": "植物组"
+  },
+  {
+    "id": 121,
+    "name": "小黑猫",
+    "group": "动物组"
+  },
+  {
+    "id": 121,
+    "name": "小黑猫",
+    "group": "妖精组"
+  },
+  {
+    "id": 122,
+    "name": "黑猫巫师",
+    "group": "动物组"
+  },
+  {
+    "id": 122,
+    "name": "黑猫巫师",
+    "group": "妖精组"
+  },
+  {
+    "id": 123,
+    "name": "忽幽狸",
+    "group": "动物组"
+  },
+  {
+    "id": 123,
+    "name": "忽幽狸",
+    "group": "拟人组"
+  },
+  {
+    "id": 124,
+    "name": "影狸",
+    "group": "动物组"
+  },
+  {
+    "id": 124,
+    "name": "影狸",
+    "group": "拟人组"
+  },
+  {
+    "id": 125,
+    "name": "多多",
+    "group": "拟人组"
+  },
+  {
+    "id": 126,
+    "name": "多啦多",
+    "group": "拟人组"
+  },
+  {
+    "id": 127,
+    "name": "古啦多",
+    "group": "拟人组"
+  },
+  {
+    "id": 128,
+    "name": "哭哭菇",
+    "group": "植物组"
+  },
+  {
+    "id": 129,
+    "name": "怖须菇",
+    "group": "植物组"
+  },
+  {
+    "id": 130,
+    "name": "怖哭菇",
+    "group": "植物组"
+  },
+  {
+    "id": 131,
+    "name": "恶魔狼",
+    "group": "动物组"
+  },
+  {
+    "id": 132,
+    "name": "小电企鹅",
+    "group": "天空组"
+  },
+  {
+    "id": 133,
+    "name": "电企鹅",
+    "group": "天空组"
+  },
+  {
+    "id": 134,
+    "name": "雪豆丁",
+    "group": "巨灵组"
+  },
+  {
+    "id": 134,
+    "name": "雪豆丁",
+    "group": "拟人组"
+  },
+  {
+    "id": 135,
+    "name": "雪蛮人",
+    "group": "巨灵组"
+  },
+  {
+    "id": 135,
+    "name": "雪蛮人",
+    "group": "拟人组"
+  },
+  {
+    "id": 136,
+    "name": "雪巨人",
+    "group": "巨灵组"
+  },
+  {
+    "id": 136,
+    "name": "雪巨人",
+    "group": "拟人组"
+  },
+  {
+    "id": 137,
+    "name": "呼呼猪",
+    "group": "动物组"
+  },
+  {
+    "id": 138,
+    "name": "獠牙猪",
+    "group": "动物组"
+  },
+  {
+    "id": 139,
+    "name": "雪娃娃",
+    "group": "妖精组"
+  },
+  {
+    "id": 140,
+    "name": "冰封怨灵",
+    "group": "妖精组"
+  },
+  {
+    "id": 141,
+    "name": "雪灵",
+    "group": "妖精组"
+  },
+  {
+    "id": 142,
+    "name": "大耳帽兜",
+    "group": "妖精组"
+  },
+  {
+    "id": 142,
+    "name": "大耳帽兜",
+    "group": "拟人组"
+  },
+  {
+    "id": 143,
+    "name": "帽兜娃娃",
+    "group": "妖精组"
+  },
+  {
+    "id": 143,
+    "name": "帽兜娃娃",
+    "group": "拟人组"
+  },
+  {
+    "id": 144,
+    "name": "雪影娃娃",
+    "group": "妖精组"
+  },
+  {
+    "id": 144,
+    "name": "雪影娃娃",
+    "group": "拟人组"
+  },
+  {
+    "id": 145,
+    "name": "权杖-Ⅱ",
+    "group": "机械组"
+  },
+  {
+    "id": 146,
+    "name": "权杖-Ⅴ",
+    "group": "机械组"
+  },
+  {
+    "id": 147,
+    "name": "灵狐",
+    "group": "动物组"
+  },
+  {
+    "id": 148,
+    "name": "九尾狐",
+    "group": "动物组"
+  },
+  {
+    "id": 149,
+    "name": "尖嘴狐仙",
+    "group": "动物组"
+  },
+  {
+    "id": 150,
+    "name": "里奥",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 151,
+    "name": "灵羽勇士",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 152,
+    "name": "圣羽翼王",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 153,
+    "name": "松仔",
+    "group": "动物组"
+  },
+  {
+    "id": 154,
+    "name": "松叶羊",
+    "group": "动物组"
+  },
+  {
+    "id": 155,
+    "name": "针叶巡林",
+    "group": "动物组"
+  },
+  {
+    "id": 156,
+    "name": "小勇狮",
+    "group": "动物组"
+  },
+  {
+    "id": 157,
+    "name": "炽焰狮",
+    "group": "动物组"
+  },
+  {
+    "id": 158,
+    "name": "炽心勇狮",
+    "group": "动物组"
+  },
+  {
+    "id": 159,
+    "name": "水滴蛇",
+    "group": "两栖组"
+  },
+  {
+    "id": 159,
+    "name": "水滴蛇",
+    "group": "妖精组"
+  },
+  {
+    "id": 160,
+    "name": "水蛇锁",
+    "group": "两栖组"
+  },
+  {
+    "id": 160,
+    "name": "水蛇锁",
+    "group": "妖精组"
+  },
+  {
+    "id": 161,
+    "name": "游蛇魔使",
+    "group": "两栖组"
+  },
+  {
+    "id": 161,
+    "name": "游蛇魔使",
+    "group": "妖精组"
+  },
+  {
+    "id": 162,
+    "name": "公平鸽",
+    "group": "天空组"
+  },
+  {
+    "id": 163,
+    "name": "小怂猫",
+    "group": "动物组"
+  },
+  {
+    "id": 163,
+    "name": "小怂猫",
+    "group": "拟人组"
+  },
+  {
+    "id": 164,
+    "name": "怒目怂猫",
+    "group": "动物组"
+  },
+  {
+    "id": 164,
+    "name": "怒目怂猫",
+    "group": "拟人组"
+  },
+  {
+    "id": 165,
+    "name": "小狮鹫（崖间地的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 165,
+    "name": "小狮鹫（崖间地的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 165,
+    "name": "小狮鹫（高山地的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 165,
+    "name": "小狮鹫（高山地的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 166,
+    "name": "神圣狮鹫（崖间地的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 166,
+    "name": "神圣狮鹫（崖间地的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 166,
+    "name": "神圣狮鹫（高山地的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 166,
+    "name": "神圣狮鹫（高山地的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 167,
+    "name": "皇家狮鹫（崖间地的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 167,
+    "name": "皇家狮鹫（崖间地的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 167,
+    "name": "皇家狮鹫（高山地的样子）",
+    "group": "天空组"
+  },
+  {
+    "id": 167,
+    "name": "皇家狮鹫（高山地的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 168,
+    "name": "圆眼蜘蛛",
+    "group": "昆虫组"
+  },
+  {
+    "id": 169,
+    "name": "尖角蜘蛛",
+    "group": "昆虫组"
+  },
+  {
+    "id": 170,
+    "name": "芋香巨角蛛",
+    "group": "昆虫组"
+  },
+  {
+    "id": 171,
+    "name": "波波螺",
+    "group": "两栖组"
+  },
+  {
+    "id": 171,
+    "name": "波波螺",
+    "group": "大地组"
+  },
+  {
+    "id": 171,
+    "name": "波波螺（被污染的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 171,
+    "name": "波波螺（被污染的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 172,
+    "name": "消波螺",
+    "group": "两栖组"
+  },
+  {
+    "id": 172,
+    "name": "消波螺",
+    "group": "大地组"
+  },
+  {
+    "id": 172,
+    "name": "消波螺（被污染的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 172,
+    "name": "消波螺（被污染的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 173,
+    "name": "嗜波螺",
+    "group": "两栖组"
+  },
+  {
+    "id": 173,
+    "name": "嗜波螺",
+    "group": "大地组"
+  },
+  {
+    "id": 173,
+    "name": "嗜波螺（被污染的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 173,
+    "name": "嗜波螺（被污染的样子）",
+    "group": "大地组"
+  },
+  {
+    "id": 174,
+    "name": "菇菇丁",
+    "group": "植物组"
+  },
+  {
+    "id": 175,
+    "name": "多菇丁",
+    "group": "植物组"
+  },
+  {
+    "id": 176,
+    "name": "九幽菇",
+    "group": "植物组"
+  },
+  {
+    "id": 177,
+    "name": "斑斑",
+    "group": "天空组"
+  },
+  {
+    "id": 178,
+    "name": "斑枭",
+    "group": "天空组"
+  },
+  {
+    "id": 179,
+    "name": "草头鸭",
+    "group": "两栖组"
+  },
+  {
+    "id": 179,
+    "name": "草头鸭",
+    "group": "天空组"
+  },
+  {
+    "id": 180,
+    "name": "卷毛鸭",
+    "group": "两栖组"
+  },
+  {
+    "id": 180,
+    "name": "卷毛鸭",
+    "group": "天空组"
+  },
+  {
+    "id": 181,
+    "name": "海豹战士",
+    "group": "两栖组"
+  },
+  {
+    "id": 181,
+    "name": "海豹战士",
+    "group": "动物组"
+  },
+  {
+    "id": 182,
+    "name": "海豹船长",
+    "group": "两栖组"
+  },
+  {
+    "id": 182,
+    "name": "海豹船长",
+    "group": "动物组"
+  },
+  {
+    "id": 183,
+    "name": "号儿鱼",
+    "group": "妖精组"
+  },
+  {
+    "id": 183,
+    "name": "号儿鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 184,
+    "name": "圆号鱼",
+    "group": "妖精组"
+  },
+  {
+    "id": 184,
+    "name": "圆号鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 185,
+    "name": "甜田螺",
+    "group": "妖精组"
+  },
+  {
+    "id": 185,
+    "name": "甜田螺",
+    "group": "软体组"
+  },
+  {
+    "id": 186,
+    "name": "壳乙螺",
+    "group": "妖精组"
+  },
+  {
+    "id": 186,
+    "name": "壳乙螺",
+    "group": "软体组"
+  },
+  {
+    "id": 187,
+    "name": "卡洛儿",
+    "group": "妖精组"
+  },
+  {
+    "id": 187,
+    "name": "卡洛儿",
+    "group": "软体组"
+  },
+  {
+    "id": 188,
+    "name": "棋棋（白子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 188,
+    "name": "棋棋（黑子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 189,
+    "name": "棋骑士（白子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 189,
+    "name": "棋骑士（黑子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 190,
+    "name": "棋齐垒（白子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 190,
+    "name": "棋齐垒（黑子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 191,
+    "name": "棋祈督（白子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 191,
+    "name": "棋祈督（黑子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 192,
+    "name": "棋绮后（白子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 192,
+    "name": "棋绮后（黑子）",
+    "group": "妖精组"
+  },
+  {
+    "id": 193,
+    "name": "奔波鼠",
+    "group": "动物组"
+  },
+  {
+    "id": 193,
+    "name": "奔波鼠",
+    "group": "拟人组"
+  },
+  {
+    "id": 194,
+    "name": "流浪鼠",
+    "group": "动物组"
+  },
+  {
+    "id": 194,
+    "name": "流浪鼠",
+    "group": "拟人组"
+  },
+  {
+    "id": 195,
+    "name": "呆小路",
+    "group": "动物组"
+  },
+  {
+    "id": 195,
+    "name": "呆小路",
+    "group": "拟人组"
+  },
+  {
+    "id": 196,
+    "name": "舞动路路",
+    "group": "动物组"
+  },
+  {
+    "id": 196,
+    "name": "舞动路路",
+    "group": "拟人组"
+  },
+  {
+    "id": 197,
+    "name": "白发路路",
+    "group": "动物组"
+  },
+  {
+    "id": 197,
+    "name": "白发路路",
+    "group": "拟人组"
+  },
+  {
+    "id": 198,
+    "name": "逗逗",
+    "group": "巨灵组"
+  },
+  {
+    "id": 198,
+    "name": "逗逗",
+    "group": "动物组"
+  },
+  {
+    "id": 199,
+    "name": "气球猫",
+    "group": "巨灵组"
+  },
+  {
+    "id": 199,
+    "name": "气球猫",
+    "group": "动物组"
+  },
+  {
+    "id": 200,
+    "name": "梦想三三",
+    "group": "巨灵组"
+  },
+  {
+    "id": 200,
+    "name": "梦想三三",
+    "group": "动物组"
+  },
+  {
+    "id": 201,
+    "name": "花怨鳗",
+    "group": "两栖组"
+  },
+  {
+    "id": 201,
+    "name": "花怨鳗",
+    "group": "海洋组"
+  },
+  {
+    "id": 202,
+    "name": "鳗尾兽",
+    "group": "两栖组"
+  },
+  {
+    "id": 202,
+    "name": "鳗尾兽",
+    "group": "海洋组"
+  },
+  {
+    "id": 203,
+    "name": "伊雷龙",
+    "group": "龙组"
+  },
+  {
+    "id": 204,
+    "name": "伊兰亚龙",
+    "group": "龙组"
+  },
+  {
+    "id": 204,
+    "name": "伊兰龙",
+    "group": "龙组"
+  },
+  {
+    "id": 205,
+    "name": "拉特",
+    "group": "妖精组"
+  },
+  {
+    "id": 206,
+    "name": "酷拉",
+    "group": "妖精组"
+  },
+  {
+    "id": 207,
+    "name": "闪电环",
+    "group": "魔力组"
+  },
+  {
+    "id": 208,
+    "name": "刺电环",
+    "group": "魔力组"
+  },
+  {
+    "id": 209,
+    "name": "荆棘电环",
+    "group": "魔力组"
+  },
+  {
+    "id": 210,
+    "name": "小箱怪",
+    "group": "妖精组"
+  },
+  {
+    "id": 210,
+    "name": "小箱怪",
+    "group": "机械组"
+  },
+  {
+    "id": 211,
+    "name": "迷迷箱怪",
+    "group": "妖精组"
+  },
+  {
+    "id": 211,
+    "name": "迷迷箱怪",
+    "group": "机械组"
+  },
+  {
+    "id": 212,
+    "name": "古钟蛇（本来的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 212,
+    "name": "古钟蛇（本来的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 213,
+    "name": "寒音蛇（本来的样子）",
+    "group": "两栖组"
+  },
+  {
+    "id": 213,
+    "name": "寒音蛇（本来的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 214,
+    "name": "矮脚爬爬",
+    "group": "巨灵组"
+  },
+  {
+    "id": 214,
+    "name": "矮脚爬爬",
+    "group": "昆虫组"
+  },
+  {
+    "id": 215,
+    "name": "恶魔红钻",
+    "group": "巨灵组"
+  },
+  {
+    "id": 215,
+    "name": "恶魔红钻",
+    "group": "昆虫组"
+  },
+  {
+    "id": 216,
+    "name": "火尾瓦特",
+    "group": "巨灵组"
+  },
+  {
+    "id": 217,
+    "name": "火尾战士",
+    "group": "巨灵组"
+  },
+  {
+    "id": 218,
+    "name": "烈火守护",
+    "group": "巨灵组"
+  },
+  {
+    "id": 219,
+    "name": "里拉鳐",
+    "group": "妖精组"
+  },
+  {
+    "id": 219,
+    "name": "里拉鳐",
+    "group": "海洋组"
+  },
+  {
+    "id": 220,
+    "name": "海枝枝（碧蓝珊瑚）",
+    "group": "植物组"
+  },
+  {
+    "id": 220,
+    "name": "海枝枝（碧蓝珊瑚）",
+    "group": "海洋组"
+  },
+  {
+    "id": 220,
+    "name": "海枝枝（杏黄百合）",
+    "group": "植物组"
+  },
+  {
+    "id": 220,
+    "name": "海枝枝（杏黄百合）",
+    "group": "海洋组"
+  },
+  {
+    "id": 220,
+    "name": "海枝枝（洋红沙丁）",
+    "group": "植物组"
+  },
+  {
+    "id": 220,
+    "name": "海枝枝（洋红沙丁）",
+    "group": "海洋组"
+  },
+  {
+    "id": 220,
+    "name": "海枝枝（翠绿纶布）",
+    "group": "植物组"
+  },
+  {
+    "id": 220,
+    "name": "海枝枝（翠绿纶布）",
+    "group": "海洋组"
+  },
+  {
+    "id": 221,
+    "name": "多西",
+    "group": "巨灵组"
+  },
+  {
+    "id": 221,
+    "name": "多西",
+    "group": "机械组"
+  },
+  {
+    "id": 222,
+    "name": "库多西",
+    "group": "巨灵组"
+  },
+  {
+    "id": 222,
+    "name": "库多西",
+    "group": "机械组"
+  },
+  {
+    "id": 223,
+    "name": "波多西",
+    "group": "巨灵组"
+  },
+  {
+    "id": 223,
+    "name": "波多西",
+    "group": "机械组"
+  },
+  {
+    "id": 224,
+    "name": "小翼龙",
+    "group": "天空组"
+  },
+  {
+    "id": 224,
+    "name": "小翼龙",
+    "group": "龙组"
+  },
+  {
+    "id": 225,
+    "name": "翼龙",
+    "group": "天空组"
+  },
+  {
+    "id": 225,
+    "name": "翼龙",
+    "group": "龙组"
+  },
+  {
+    "id": 226,
+    "name": "电动长颈鹿",
+    "group": "动物组"
+  },
+  {
+    "id": 227,
+    "name": "奔乐鹿",
+    "group": "动物组"
+  },
+  {
+    "id": 228,
+    "name": "爵士鹿",
+    "group": "动物组"
+  },
+  {
+    "id": 229,
+    "name": "缇塔",
+    "group": "机械组"
+  },
+  {
+    "id": 230,
+    "name": "声波缇塔",
+    "group": "机械组"
+  },
+  {
+    "id": 231,
+    "name": "小鹬",
+    "group": "天空组"
+  },
+  {
+    "id": 232,
+    "name": "鄙目鹬",
+    "group": "天空组"
+  },
+  {
+    "id": 233,
+    "name": "高脚鹬",
+    "group": "天空组"
+  },
+  {
+    "id": 234,
+    "name": "脆筒甜甜",
+    "group": "软体组"
+  },
+  {
+    "id": 234,
+    "name": "脆筒甜甜",
+    "group": "魔力组"
+  },
+  {
+    "id": 235,
+    "name": "香草甜甜",
+    "group": "软体组"
+  },
+  {
+    "id": 235,
+    "name": "香草甜甜",
+    "group": "魔力组"
+  },
+  {
+    "id": 235,
+    "name": "香草甜甜（杨桃饰品）",
+    "group": "软体组"
+  },
+  {
+    "id": 235,
+    "name": "香草甜甜（杨桃饰品）",
+    "group": "魔力组"
+  },
+  {
+    "id": 235,
+    "name": "香草甜甜（蓝莓饰品）",
+    "group": "软体组"
+  },
+  {
+    "id": 235,
+    "name": "香草甜甜（蓝莓饰品）",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（樱桃草莓口味）",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（樱桃草莓口味）",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（樱桃抹茶口味）",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（樱桃抹茶口味）",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（蓝莓巧克力口味）",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（蓝莓巧克力口味）",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（蓝莓草莓口味）",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（蓝莓草莓口味）",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（蓝莓抹茶口味）",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（蓝莓抹茶口味）",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（杨桃巧克力口味）",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（杨桃巧克力口味）",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（杨桃草莓口味）",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（杨桃草莓口味）",
+    "group": "魔力组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（杨桃抹茶口味）",
+    "group": "软体组"
+  },
+  {
+    "id": 236,
+    "name": "圣代甜甜（杨桃抹茶口味）",
+    "group": "魔力组"
+  },
+  {
+    "id": 237,
+    "name": "刺轮砣（上弦的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 237,
+    "name": "刺轮砣（下弦的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 238,
+    "name": "月亮砣（上弦的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 238,
+    "name": "月亮砣（下弦的样子）",
+    "group": "海洋组"
+  },
+  {
+    "id": 239,
+    "name": "豆丁鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 239,
+    "name": "豆丁鱼",
+    "group": "龙组"
+  },
+  {
+    "id": 240,
+    "name": "快鳍鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 240,
+    "name": "快鳍鱼",
+    "group": "龙组"
+  },
+  {
+    "id": 241,
+    "name": "龙鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 241,
+    "name": "龙鱼",
+    "group": "龙组"
+  },
+  {
+    "id": 242,
+    "name": "胆小鳗鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 243,
+    "name": "闪电鳗鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 244,
+    "name": "翡翠水母",
+    "group": "软体组"
+  },
+  {
+    "id": 244,
+    "name": "翡翠水母",
+    "group": "海洋组"
+  },
+  {
+    "id": 245,
+    "name": "琉璃水母",
+    "group": "软体组"
+  },
+  {
+    "id": 245,
+    "name": "琉璃水母",
+    "group": "海洋组"
+  },
+  {
+    "id": 246,
+    "name": "裘洛",
+    "group": "动物组"
+  },
+  {
+    "id": 246,
+    "name": "裘洛",
+    "group": "妖精组"
+  },
+  {
+    "id": 247,
+    "name": "裘力",
+    "group": "动物组"
+  },
+  {
+    "id": 247,
+    "name": "裘力",
+    "group": "妖精组"
+  },
+  {
+    "id": 248,
+    "name": "裘卡",
+    "group": "动物组"
+  },
+  {
+    "id": 248,
+    "name": "裘卡",
+    "group": "妖精组"
+  },
+  {
+    "id": 249,
+    "name": "可爱猿",
+    "group": "巨灵组"
+  },
+  {
+    "id": 249,
+    "name": "可爱猿",
+    "group": "拟人组"
+  },
+  {
+    "id": 250,
+    "name": "炽热猿",
+    "group": "巨灵组"
+  },
+  {
+    "id": 250,
+    "name": "炽热猿",
+    "group": "拟人组"
+  },
+  {
+    "id": 251,
+    "name": "火焰猿",
+    "group": "巨灵组"
+  },
+  {
+    "id": 251,
+    "name": "火焰猿",
+    "group": "拟人组"
+  },
+  {
+    "id": 252,
+    "name": "布鲁斯",
+    "group": "软体组"
+  },
+  {
+    "id": 252,
+    "name": "布鲁斯",
+    "group": "海洋组"
+  },
+  {
+    "id": 253,
+    "name": "雪顶布鲁斯",
+    "group": "软体组"
+  },
+  {
+    "id": 253,
+    "name": "雪顶布鲁斯",
+    "group": "海洋组"
+  },
+  {
+    "id": 254,
+    "name": "冰钻布鲁斯",
+    "group": "软体组"
+  },
+  {
+    "id": 254,
+    "name": "冰钻布鲁斯",
+    "group": "海洋组"
+  },
+  {
+    "id": 255,
+    "name": "治愈兔",
+    "group": "动物组"
+  },
+  {
+    "id": 255,
+    "name": "治愈兔",
+    "group": "妖精组"
+  },
+  {
+    "id": 256,
+    "name": "红丝绒",
+    "group": "动物组"
+  },
+  {
+    "id": 256,
+    "name": "红丝绒",
+    "group": "妖精组"
+  },
+  {
+    "id": 257,
+    "name": "红绒十字",
+    "group": "动物组"
+  },
+  {
+    "id": 257,
+    "name": "红绒十字",
+    "group": "妖精组"
+  },
+  {
+    "id": 258,
+    "name": "乌达（极昼的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 258,
+    "name": "乌达（极夜的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 259,
+    "name": "迷你乌（极昼的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 259,
+    "name": "迷你乌（极夜的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 260,
+    "name": "乌拉塔（极昼的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 260,
+    "name": "乌拉塔（极夜的样子）",
+    "group": "巨灵组"
+  },
+  {
+    "id": 261,
+    "name": "螺旋帕帕",
+    "group": "天空组"
+  },
+  {
+    "id": 261,
+    "name": "螺旋帕帕",
+    "group": "机械组"
+  },
+  {
+    "id": 262,
+    "name": "帕帕斯卡",
+    "group": "天空组"
+  },
+  {
+    "id": 262,
+    "name": "帕帕斯卡",
+    "group": "机械组"
+  },
+  {
+    "id": 263,
+    "name": "机械方方",
+    "group": "拟人组"
+  },
+  {
+    "id": 263,
+    "name": "机械方方",
+    "group": "机械组"
+  },
+  {
+    "id": 264,
+    "name": "多彩方方",
+    "group": "拟人组"
+  },
+  {
+    "id": 264,
+    "name": "多彩方方",
+    "group": "机械组"
+  },
+  {
+    "id": 265,
+    "name": "立方人",
+    "group": "拟人组"
+  },
+  {
+    "id": 265,
+    "name": "立方人",
+    "group": "机械组"
+  },
+  {
+    "id": 266,
+    "name": "可立鸡",
+    "group": "天空组"
+  },
+  {
+    "id": 266,
+    "name": "可立鸡",
+    "group": "拟人组"
+  },
+  {
+    "id": 267,
+    "name": "晕晕鸡",
+    "group": "天空组"
+  },
+  {
+    "id": 267,
+    "name": "晕晕鸡",
+    "group": "拟人组"
+  },
+  {
+    "id": 268,
+    "name": "绅士鸡",
+    "group": "天空组"
+  },
+  {
+    "id": 268,
+    "name": "绅士鸡",
+    "group": "拟人组"
+  },
+  {
+    "id": 269,
+    "name": "武者鸡",
+    "group": "天空组"
+  },
+  {
+    "id": 269,
+    "name": "武者鸡",
+    "group": "拟人组"
+  },
+  {
+    "id": 270,
+    "name": "优优",
+    "group": "动物组"
+  },
+  {
+    "id": 271,
+    "name": "绒光优优",
+    "group": "动物组"
+  },
+  {
+    "id": 272,
+    "name": "噼啪鸟",
+    "group": "巨灵组"
+  },
+  {
+    "id": 272,
+    "name": "噼啪鸟",
+    "group": "天空组"
+  },
+  {
+    "id": 273,
+    "name": "深蓝鲸",
+    "group": "巨灵组"
+  },
+  {
+    "id": 273,
+    "name": "深蓝鲸",
+    "group": "海洋组"
+  },
+  {
+    "id": 274,
+    "name": "格兰种子",
+    "group": "妖精组"
+  },
+  {
+    "id": 274,
+    "name": "格兰种子",
+    "group": "植物组"
+  },
+  {
+    "id": 275,
+    "name": "格兰花",
+    "group": "妖精组"
+  },
+  {
+    "id": 275,
+    "name": "格兰花",
+    "group": "植物组"
+  },
+  {
+    "id": 276,
+    "name": "格兰球",
+    "group": "妖精组"
+  },
+  {
+    "id": 276,
+    "name": "格兰球",
+    "group": "植物组"
+  },
+  {
+    "id": 277,
+    "name": "地鼠（枯水期的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 277,
+    "name": "地鼠（储水期的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 278,
+    "name": "遁鼠（枯水期的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 278,
+    "name": "遁鼠（储水期的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 279,
+    "name": "遁地鼠（枯水期的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 279,
+    "name": "遁地鼠（储水期的样子）",
+    "group": "动物组"
+  },
+  {
+    "id": 280,
+    "name": "墨鱿士",
+    "group": "软体组"
+  },
+  {
+    "id": 280,
+    "name": "墨鱿士",
+    "group": "海洋组"
+  },
+  {
+    "id": 281,
+    "name": "混乱鱿彩",
+    "group": "软体组"
+  },
+  {
+    "id": 281,
+    "name": "混乱鱿彩",
+    "group": "海洋组"
+  },
+  {
+    "id": 282,
+    "name": "秩序鱿墨",
+    "group": "软体组"
+  },
+  {
+    "id": 282,
+    "name": "秩序鱿墨",
+    "group": "海洋组"
+  },
+  {
+    "id": 283,
+    "name": "小甲虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 283,
+    "name": "小甲虫",
+    "group": "天空组"
+  },
+  {
+    "id": 284,
+    "name": "铠甲虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 284,
+    "name": "铠甲虫",
+    "group": "天空组"
+  },
+  {
+    "id": 285,
+    "name": "圣剑侍从",
+    "group": "巨灵组"
+  },
+  {
+    "id": 285,
+    "name": "圣剑侍从",
+    "group": "机械组"
+  },
+  {
+    "id": 286,
+    "name": "圣剑-X",
+    "group": "巨灵组"
+  },
+  {
+    "id": 286,
+    "name": "圣剑-X",
+    "group": "机械组"
+  },
+  {
+    "id": 287,
+    "name": "吸泥鸥",
+    "group": "两栖组"
+  },
+  {
+    "id": 287,
+    "name": "吸泥鸥",
+    "group": "天空组"
+  },
+  {
+    "id": 288,
+    "name": "泥吼牙",
+    "group": "两栖组"
+  },
+  {
+    "id": 288,
+    "name": "泥吼牙",
+    "group": "天空组"
+  },
+  {
+    "id": 289,
+    "name": "大头骨龙",
+    "group": "巨灵组"
+  },
+  {
+    "id": 289,
+    "name": "大头骨龙",
+    "group": "龙组"
+  },
+  {
+    "id": 290,
+    "name": "寂灭骨龙",
+    "group": "巨灵组"
+  },
+  {
+    "id": 290,
+    "name": "寂灭骨龙",
+    "group": "龙组"
+  },
+  {
+    "id": 291,
+    "name": "厉毒小萝",
+    "group": "天空组"
+  },
+  {
+    "id": 291,
+    "name": "厉毒小萝",
+    "group": "拟人组"
+  },
+  {
+    "id": 292,
+    "name": "厉毒修萝",
+    "group": "天空组"
+  },
+  {
+    "id": 292,
+    "name": "厉毒修萝",
+    "group": "拟人组"
+  },
+  {
+    "id": 293,
+    "name": "小帕尔",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 294,
+    "name": "帕尔萨斯",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 295,
+    "name": "龙息帕尔",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 296,
+    "name": "毛头小蛛",
+    "group": "昆虫组"
+  },
+  {
+    "id": 296,
+    "name": "毛头小蛛",
+    "group": "妖精组"
+  },
+  {
+    "id": 297,
+    "name": "捕尘长绒",
+    "group": "昆虫组"
+  },
+  {
+    "id": 297,
+    "name": "捕尘长绒",
+    "group": "妖精组"
+  },
+  {
+    "id": 298,
+    "name": "食尘短绒",
+    "group": "昆虫组"
+  },
+  {
+    "id": 298,
+    "name": "食尘短绒",
+    "group": "妖精组"
+  },
+  {
+    "id": 299,
+    "name": "画精灵",
+    "group": "巨灵组"
+  },
+  {
+    "id": 299,
+    "name": "画精灵",
+    "group": "妖精组"
+  },
+  {
+    "id": 300,
+    "name": "画像守护",
+    "group": "巨灵组"
+  },
+  {
+    "id": 300,
+    "name": "画像守护",
+    "group": "妖精组"
+  },
+  {
+    "id": 301,
+    "name": "画间法师手",
+    "group": "巨灵组"
+  },
+  {
+    "id": 301,
+    "name": "画间法师手",
+    "group": "妖精组"
+  },
+  {
+    "id": 302,
+    "name": "画间沉铁兽",
+    "group": "巨灵组"
+  },
+  {
+    "id": 302,
+    "name": "画间沉铁兽",
+    "group": "妖精组"
+  },
+  {
+    "id": 303,
+    "name": "书魔虫",
+    "group": "巨灵组"
+  },
+  {
+    "id": 303,
+    "name": "书魔虫",
+    "group": "妖精组"
+  },
+  {
+    "id": 304,
+    "name": "书卷守护",
+    "group": "巨灵组"
+  },
+  {
+    "id": 304,
+    "name": "书卷守护",
+    "group": "妖精组"
+  },
+  {
+    "id": 305,
+    "name": "古卷执政官",
+    "group": "巨灵组"
+  },
+  {
+    "id": 305,
+    "name": "古卷执政官",
+    "group": "妖精组"
+  },
+  {
+    "id": 306,
+    "name": "古卷匣魔像",
+    "group": "巨灵组"
+  },
+  {
+    "id": 306,
+    "name": "古卷匣魔像",
+    "group": "妖精组"
+  },
+  {
+    "id": 307,
+    "name": "绒绒",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 308,
+    "name": "小绒茧",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 309,
+    "name": "绒仙子",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 310,
+    "name": "犀角鸟",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 311,
+    "name": "光纤兽",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 312,
+    "name": "疾光千兽",
+    "group": "无法孵蛋"
+  },
+  {
+    "id": 313,
+    "name": "果冻",
+    "group": "魔力组"
+  },
+  {
+    "id": 313,
+    "name": "果冻",
+    "group": "海洋组"
+  },
+  {
+    "id": 314,
+    "name": "抹茶布丁",
+    "group": "魔力组"
+  },
+  {
+    "id": 314,
+    "name": "抹茶布丁",
+    "group": "海洋组"
+  },
+  {
+    "id": 315,
+    "name": "椰浆布丁",
+    "group": "海洋组"
+  },
+  {
+    "id": 316,
+    "name": "熔岩布丁",
+    "group": "海洋组"
+  },
+  {
+    "id": 317,
+    "name": "星尘虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 318,
+    "name": "落星虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 319,
+    "name": "陨星虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 320,
+    "name": "双灯鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 321,
+    "name": "利灯鱼",
+    "group": "海洋组"
+  },
+  {
+    "id": 322,
+    "name": "月牙雪熊",
+    "group": "巨灵组"
+  },
+  {
+    "id": 322,
+    "name": "月牙雪熊",
+    "group": "动物组"
+  },
+  {
+    "id": 323,
+    "name": "嗜光嗡嗡",
+    "group": "昆虫组"
+  },
+  {
+    "id": 324,
+    "name": "窃光蚊",
+    "group": "昆虫组"
+  },
+  {
+    "id": 325,
+    "name": "柴渣虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 325,
+    "name": "柴渣虫",
+    "group": "植物组"
+  },
+  {
+    "id": 326,
+    "name": "燃薪虫",
+    "group": "昆虫组"
+  },
+  {
+    "id": 326,
+    "name": "燃薪虫",
+    "group": "植物组"
+  },
+  {
+    "id": 327,
+    "name": "空空颅",
+    "group": "巨灵组"
+  },
+  {
+    "id": 327,
+    "name": "空空颅",
+    "group": "魔力组"
+  },
+  {
+    "id": 328,
+    "name": "夜宿颅",
+    "group": "巨灵组"
+  },
+  {
+    "id": 328,
+    "name": "夜宿颅",
+    "group": "魔力组"
+  },
+  {
+    "id": 329,
+    "name": "夜枭",
+    "group": "巨灵组"
+  },
+  {
+    "id": 329,
+    "name": "夜枭",
+    "group": "魔力组"
+  },
+  {
+    "id": 330,
+    "name": "粉粉星",
+    "group": "妖精组"
+  },
+  {
+    "id": 330,
+    "name": "粉粉星",
+    "group": "软体组"
+  },
+  {
+    "id": 331,
+    "name": "小皮球",
+    "group": "妖精组"
+  },
+  {
+    "id": 331,
+    "name": "小皮球",
+    "group": "软体组"
+  },
+  {
+    "id": 332,
+    "name": "贝瑟",
+    "group": "机械组"
+  },
+  {
+    "id": 333,
+    "name": "贝加尔",
+    "group": "机械组"
+  },
+  {
+    "id": 334,
+    "name": "贝古斯",
+    "group": "机械组"
+  },
+  {
+    "id": 335,
+    "name": "粉星仔",
+    "group": "天空组"
+  },
+  {
+    "id": 335,
+    "name": "粉星仔",
+    "group": "妖精组"
+  },
+  {
+    "id": 336,
+    "name": "粉耳星兔",
+    "group": "天空组"
+  },
+  {
+    "id": 336,
+    "name": "粉耳星兔",
+    "group": "妖精组"
+  },
+  {
+    "id": 337,
+    "name": "落陨星兔",
+    "group": "天空组"
+  },
+  {
+    "id": 337,
+    "name": "落陨星兔",
+    "group": "妖精组"
+  },
+  {
+    "id": 338,
+    "name": "布瓜蝌",
+    "group": "两栖组"
+  },
+  {
+    "id": 339,
+    "name": "上岸蛙",
+    "group": "两栖组"
+  },
+  {
+    "id": 340,
+    "name": "火红尾",
+    "group": "动物组"
+  },
+  {
+    "id": 341,
+    "name": "雅丹鬃",
+    "group": "动物组"
+  },
+  {
+    "id": 342,
+    "name": "春团",
+    "group": "动物组"
+  },
+  {
+    "id": 342,
+    "name": "春团",
+    "group": "妖精组"
+  },
+  {
+    "id": 343,
+    "name": "春兔",
+    "group": "动物组"
+  },
+  {
+    "id": 343,
+    "name": "春兔",
+    "group": "妖精组"
+  },
+  {
+    "id": 344,
+    "name": "春花兔",
+    "group": "动物组"
+  },
+  {
+    "id": 344,
+    "name": "春花兔",
+    "group": "妖精组"
+  },
+  {
+    "id": 345,
+    "name": "幽星光",
+    "group": "巨灵组"
+  },
+  {
+    "id": 345,
+    "name": "幽星光",
+    "group": "妖精组"
+  },
+  {
+    "id": 346,
+    "name": "曜星光",
+    "group": "巨灵组"
+  },
+  {
+    "id": 346,
+    "name": "曜星光",
+    "group": "妖精组"
+  },
+  {
+    "id": 347,
+    "name": "暮星辰",
+    "group": "巨灵组"
+  },
+  {
+    "id": 347,
+    "name": "暮星辰",
+    "group": "妖精组"
+  }];
+
+        let currentGroup = '';
+        let filteredPets = [];
+        let pets = [];
+
+        function initPedia() {
+            if (petData.length === 0) {
+                document.getElementById('petList').innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">📝</div>
+                        <h3>数据待填充</h3>
+                        <p style="font-size: 0.9em; margin-top: 8px; line-height: 1.6;">
+                            请在代码中找到 petData 变量<br>
+                            按照格式添加你的宠物数据
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            pets = mergePets(petData);
+            filteredPets = [...pets];
+            
+            initGroups();
+            setupEventListeners();
+            renderList(filteredPets, '', false, '');
+        }
+
+        function mergePets(data) {
+            const petMap = new Map();
+
+            data.forEach(pet => {
+                const key = `${pet.id}_${pet.name}`;
+                if (petMap.has(key)) {
+                    const existing = petMap.get(key);
+                    if (!existing.groups.includes(pet.group)) {
+                        existing.groups.push(pet.group);
+                    }
+                } else {
+                    petMap.set(key, {
+                        id: pet.id,
+                        name: pet.name,
+                        groups: [pet.group],
+                        searchName: pet.name.toLowerCase()
+                    });
+                }
+            });
+
+            return Array.from(petMap.values()).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+        }
+
+        function initGroups() {
+            const allGroups = [...new Set(petData.map(p => p.group))].sort();
+            const groupList = document.getElementById('groupList');
+            allGroups.forEach(group => {
+                const tag = document.createElement('div');
+                tag.className = 'group-item';
+                tag.dataset.group = group;
+                tag.textContent = group;
+                groupList.appendChild(tag);
+            });
+        }
+
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            const searchHint = document.getElementById('searchHint');
+            const groupList = document.getElementById('groupList');
+
+            searchInput.addEventListener('input', (e) => {
+                const value = e.target.value.trim();
+                const isNumber = /^\d+$/.test(value);
+                searchHint.textContent = isNumber ? '编号' : '名称';
+                performPediaSearch();
+            });
+
+            groupList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('group-item')) {
+                    groupList.querySelectorAll('.group-item').forEach(item => item.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentGroup = e.target.dataset.group;
+                    performPediaSearch();
+                }
+            });
+        }
+
+        function performPediaSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const isNumber = /^\d+$/.test(query);
+
+            filteredPets = pets.filter(pet => {
+                if (currentGroup && !pet.groups.includes(currentGroup)) return false;
+
+                if (query) {
+                    if (isNumber) return pet.id == query;
+                    else return pet.searchName.includes(query);
+                }
+                return true;
+            });
+
+            renderList(filteredPets, query, isNumber, currentGroup);
+        }
+
+        function renderList(data, query, isNumber, matchedGroup) {
+            document.getElementById('showCount').textContent = data.length;
+
+            if (data.length === 0) {
+                document.getElementById('petList').innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">🔍</div>
+                        <h3>未找到结果</h3>
+                        <p>请尝试其他搜索条件</p>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('petList').innerHTML = data.map(pet => {
+                let name = pet.name;
+                let id = pet.id;
+
+                if (query) {
+                    if (isNumber) {
+                        id = id.toString().replace(new RegExp(`(${query})`, 'g'), '<span class="highlight">$1</span>');
+                    } else {
+                        name = name.replace(new RegExp(`(${query})`, 'gi'), '<span class="highlight">$1</span>');
+                    }
+                }
+
+                const groupsHtml = pet.groups.map(g => {
+                    const isMatched = matchedGroup && g === matchedGroup;
+                    return `<span class="pet-group-tag ${isMatched ? 'matched' : ''}">🏷️ ${g}</span>`;
+                }).join('');
+
+                const wikiUrl = `https://wiki.biligame.com/rocom/${encodeURIComponent(pet.name)}`;
+
+                return `
+                    <a href="${wikiUrl}" target="_blank" class="pet-item">
+                        <div class="pet-id">#${id}</div>
+                        <div class="pet-content">
+                            <div class="pet-name">${name}</div>
+                            <div class="pet-groups">${groupsHtml}</div>
+                        </div>
+                        <div class="pet-arrow">›</div>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        function clearFilter() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchHint').textContent = '名称';
+            currentGroup = '';
+            document.querySelectorAll('.group-item').forEach((item, index) => {
+                item.classList.toggle('active', index === 0);
+            });
+            performPediaSearch();
+        }
+
+        // 添加回车键支持
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('sizeInput').addEventListener('keypress', function (e) { 
+                if (e.key === 'Enter') performSearch(); 
+            });
+            document.getElementById('weightInput').addEventListener('keypress', function (e) { 
+                if (e.key === 'Enter') performSearch(); 
+            });
+        });
+    </script>
 </body>
 </html>
