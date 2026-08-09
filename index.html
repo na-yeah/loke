@@ -1,260 +1,131 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>百分比计算器</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-  }
-  .container {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 860px;
-    width: 100%;
-  }
-  .card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 32px;
-    width: 400px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.15);
-    flex: 1 1 360px;
-  }
-  .card h2 {
-    font-size: 20px;
-    color: #333;
-    margin-bottom: 6px;
-  }
-  .card .desc {
-    font-size: 13px;
-    color: #999;
-    margin-bottom: 24px;
-  }
-  label {
-    display: block;
-    font-size: 13px;
-    color: #555;
-    margin-bottom: 6px;
-    font-weight: 500;
-  }
-  .input-group {
-    margin-bottom: 16px;
-  }
-  input[type="number"] {
-    width: 100%;
-    padding: 10px 14px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 16px;
-    outline: none;
-    transition: border-color .2s;
-  }
-  input[type="number"]:focus {
-    border-color: #667eea;
-  }
-  .row {
-    display: flex;
-    gap: 12px;
-    align-items: flex-end;
-  }
-  .row .input-group { flex: 1; }
-  .btn-group {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform .1s, box-shadow .2s;
-  }
-  .btn:active { transform: scale(.97); }
-  .btn-up {
-    background: linear-gradient(135deg, #43e97b, #38f9d7);
-    color: #1a5c3a;
-  }
-  .btn-down {
-    background: linear-gradient(135deg, #f5576c, #ff6a88);
-    color: #fff;
-  }
-  .btn-calc {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: #fff;
-  }
-  .result {
-    background: #f7f8fc;
-    border-radius: 12px;
-    padding: 18px;
-    text-align: center;
-    min-height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-  }
-  .result .value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #333;
-  }
-  .result .label {
-    font-size: 12px;
-    color: #999;
-    margin-top: 4px;
-  }
-  .result .detail {
-    font-size: 13px;
-    color: #777;
-    margin-top: 6px;
-  }
-  .result .up { color: #e53935; }
-  .result .down { color: #43a047; }
-  .hint {
-    text-align: center;
-    font-size: 12px;
-    color: #bbb;
-    margin-top: 12px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="糖果消消乐 - 简单好玩的消除小游戏">
+  <title>糖果消消乐</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="container">
+  <div class="page">
+    <!-- 左栏：标题 / 积分 / 进度 -->
+    <aside class="side-panel left-panel">
+      <h1 class="title">🍬 <span data-i18n="appTitle">糖果消消乐</span></h1>
 
-  <!-- 模块一：百分比涨跌计算 -->
-  <div class="card">
-    <h2>📊 百分比涨跌计算</h2>
-    <p class="desc">输入原始数值和百分比，计算涨跌后的结果</p>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-label" data-i18n="statScore">得分</span>
+          <span id="score" class="stat-value">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="statLevel">关卡</span>
+          <span id="level" class="stat-value">1</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="statMoves">剩余步数</span>
+          <span id="moves" class="stat-value">30</span>
+        </div>
+      </div>
 
-    <div class="input-group">
-      <label>原始数值</label>
-      <input type="number" id="baseVal" step="0.01" placeholder="例如：100">
-    </div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span data-i18n="targetLabel">本关目标</span>
+          <span id="target">1000</span>
+          <span data-i18n="pointsUnit">分</span>
+        </div>
+        <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+      </div>
 
-    <div class="input-group">
-      <label>百分比（%）</label>
-      <input type="number" id="pctVal" step="0.01" placeholder="例如：15">
-    </div>
+      <div class="best-line">
+        <span data-i18n="bestLabel">单关最高</span>：<b id="best">0</b>
+      </div>
 
-    <div class="btn-group">
-      <button class="btn btn-up" onclick="calcChange('up')">⬆ 涨</button>
-      <button class="btn btn-down" onclick="calcChange('down')">⬇ 跌</button>
-    </div>
+      <p class="bottom-hint" data-i18n="bottomHint">点击选中糖果，再点相邻糖果交换，也可以直接滑动</p>
+    </aside>
 
-    <div class="result" id="result1">
-      <span class="label">结果将显示在这里</span>
-    </div>
-    <p class="hint">支持小数，精确到小数点后两位</p>
+    <!-- 中间：棋盘 -->
+    <main id="boardArea" class="board-area">
+      <div id="board" class="board" aria-label="游戏棋盘">
+        <div id="toast" class="toast">
+          <span id="toastPts" class="toast-pts"></span>
+          <span id="toastCombo" class="toast-combo"></span>
+        </div>
+      </div>
+    </main>
+
+    <!-- 右栏：按钮 + 广告 -->
+    <aside class="side-panel right-panel">
+      <div class="controls">
+        <button id="backBtn" type="button" data-i18n="btnBack">返回</button>
+        <button id="hintBtn" type="button" data-i18n="btnHint">提示</button>
+        <button id="shuffleBtn" type="button" data-i18n="btnShuffle">洗牌</button>
+        <button id="restartBtn" type="button" data-i18n="btnRestart">重开</button>
+        <button id="soundBtn" type="button" aria-label="声音开关">🔊</button>
+      </div>
+
+      <div id="adSlotRight" class="ad-slot" role="complementary" aria-label="广告位">
+        <span class="ad-badge" data-i18n="adBadge">广告 AD</span>
+        <div class="ad-placeholder">
+          <span class="ad-main" data-i18n="adPlaceholder">广告位预留</span>
+          <span class="ad-sub">Ad Slot 300×250</span>
+        </div>
+      </div>
+    </aside>
   </div>
 
-  <!-- 模块二：百分点差异计算 -->
-  <div class="card">
-    <h2>📐 百分点差异计算</h2>
-    <p class="desc">输入两个数值，计算涨跌幅度与百分点差异</p>
-
-    <div class="row">
-      <div class="input-group">
-        <label>原始值</label>
-        <input type="number" id="valA" step="0.01" placeholder="例如：80">
-      </div>
-      <div class="input-group">
-        <label>变化后</label>
-        <input type="number" id="valB" step="0.01" placeholder="例如：95">
-      </div>
+  <!-- 移动端底部广告 -->
+  <div id="adSlotMobile" class="ad-slot mobile-ad" role="complementary" aria-label="广告位">
+    <span class="ad-badge" data-i18n="adBadge">广告 AD</span>
+    <div class="ad-placeholder">
+      <span class="ad-main" data-i18n="adPlaceholder">广告位预留</span>
+      <span class="ad-sub">Ad Slot 320×50</span>
     </div>
-
-    <div class="btn-group">
-      <button class="btn btn-calc" onclick="calcDiff()">计算差异</button>
-    </div>
-
-    <div class="result" id="result2">
-      <span class="label">结果将显示在这里</span>
-    </div>
-    <p class="hint">自动判断涨跌方向，精确到小数点后两位</p>
   </div>
 
-</div>
+  <!-- 主菜单 -->
+  <div id="menuModal" class="modal">
+    <div class="menu-card">
+      <h2 class="menu-title">🍬 <span data-i18n="appTitle">糖果消消乐</span></h2>
+      <p id="menuProgress" class="menu-progress"></p>
+      <button id="playBtn" type="button" class="menu-btn primary" data-i18n="btnPlay">开始游戏</button>
+      <button id="selectLevelBtn" type="button" class="menu-btn" data-i18n="btnSelectLevel">选择关卡</button>
+      <button id="langBtnMenu" type="button" class="menu-btn" data-i18n="btnLanguage">语言</button>
+    </div>
+  </div>
 
-<script>
-function round2(n) {
-  return Math.round(n * 100) / 100;
-}
+  <!-- 关卡选择 -->
+  <div id="levelModal" class="modal hidden">
+    <div class="menu-card">
+      <h2 class="menu-title" data-i18n="levelSelectTitle">选择关卡</h2>
+      <div id="levelGrid" class="level-grid"></div>
+      <p id="unlockTip" class="menu-progress"></p>
+      <button id="levelBackBtn" type="button" class="menu-btn secondary" data-i18n="btnBack">返回</button>
+    </div>
+  </div>
 
-function calcChange(dir) {
-  const base = parseFloat(document.getElementById('baseVal').value);
-  const pct  = parseFloat(document.getElementById('pctVal').value);
+  <!-- 语言选择 -->
+  <div id="langModal" class="modal hidden">
+    <div class="menu-card">
+      <h2 class="menu-title" data-i18n="langTitle">选择语言</h2>
+      <div id="langGrid" class="lang-grid"></div>
+      <button id="langCloseBtn" type="button" class="menu-btn secondary" data-i18n="btnClose">关闭</button>
+    </div>
+  </div>
 
-  if (isNaN(base) || isNaN(pct)) {
-    document.getElementById('result1').innerHTML =
-      '<span class="label" style="color:#e53935">请输入有效的数值</span>';
-    return;
-  }
+  <!-- 结算弹窗 -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div id="modalTitle" class="modal-title"></div>
+      <div id="modalText" class="modal-text"></div>
+      <div class="modal-actions">
+        <button id="modalPrimaryBtn" type="button" class="modal-btn">继续</button>
+        <button id="modalSecondaryBtn" type="button" class="modal-btn ghost">返回选关</button>
+      </div>
+    </div>
+  </div>
 
-  const change = round2(base * pct / 100);
-  let result;
-  if (dir === 'up') {
-    result = round2(base + change);
-    document.getElementById('result1').innerHTML =
-      `<div class="value up">${result.toFixed(2)}</div>
-       <div class="detail">涨了 <span class="up">+${change.toFixed(2)}</span></div>
-       <div class="label">${base} × (1 + ${pct}%) = ${result.toFixed(2)}</div>`;
-  } else {
-    result = round2(base - change);
-    document.getElementById('result1').innerHTML =
-      `<div class="value down">${result.toFixed(2)}</div>
-       <div class="detail">跌了 <span class="down">-${change.toFixed(2)}</span></div>
-       <div class="label">${base} × (1 - ${pct}%) = ${result.toFixed(2)}</div>`;
-  }
-}
-
-function calcDiff() {
-  const a = parseFloat(document.getElementById('valA').value);
-  const b = parseFloat(document.getElementById('valB').value);
-
-  if (isNaN(a) || isNaN(b)) {
-    document.getElementById('result2').innerHTML =
-      '<span class="label" style="color:#e53935">请输入有效的数值</span>';
-    return;
-  }
-
-  if (a === 0) {
-    document.getElementById('result2').innerHTML =
-      '<span class="label" style="color:#e53935">原始值不能为 0</span>';
-    return;
-  }
-
-  const diff      = round2(b - a);
-  const pctChange = round2((b - a) / Math.abs(a) * 100);
-  const isUp      = diff >= 0;
-
-  document.getElementById('result2').innerHTML =
-    `<div class="value ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${pctChange.toFixed(2)}%</div>
-     <div class="detail">绝对差值：<strong>${Math.abs(diff).toFixed(2)}</strong></div>
-     <div class="label">(${b} - ${a}) / |${a}| × 100% = ${pctChange.toFixed(2)}%</div>`;
-}
-
-// 回车触发计算
-document.getElementById('pctVal').addEventListener('keydown', e => {
-  if (e.key === 'Enter') calcChange('up');
-});
-document.getElementById('valB').addEventListener('keydown', e => {
-  if (e.key === 'Enter') calcDiff();
-});
-</script>
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
