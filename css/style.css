@@ -21,6 +21,7 @@ body {
   justify-content: center;
   min-height: 100vh;
   min-height: 100dvh;
+  min-height: 100svh;
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
@@ -51,7 +52,7 @@ body {
 }
 
 .board-area {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -187,11 +188,11 @@ body {
   left: 0;
   width: var(--tile);
   height: var(--tile);
-  border-radius: 14px;
+  border-radius: calc(var(--tile) * 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(var(--tile) * 0.58);
+  font-size: calc(var(--tile) * 0.62);
   line-height: 1;
   box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.07), 0 3px 6px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -583,14 +584,14 @@ body {
   .page {
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px 62px;
+    gap: 4px;
+    padding: 6px 10px 52px;
   }
 
   .side-panel {
     flex: 0 0 auto;
-    width: min(94vw, 480px);
-    gap: 8px;
+    width: min(94vw, 460px);
+    gap: 4px;
   }
 
   .left-panel {
@@ -599,24 +600,54 @@ body {
 
   .right-panel {
     order: 2;
-    width: min(94vw, 480px);
+    width: min(94vw, 460px);
   }
 
   .board-area {
     order: 1;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
     width: 100%;
   }
 
   .title {
-    font-size: 19px;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  .stats {
+    gap: 4px;
+  }
+
+  .stat {
+    padding: 3px 2px;
+    border-radius: 8px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    margin-bottom: 1px;
   }
 
   .stat-value {
-    font-size: 17px;
+    font-size: 13px;
   }
 
+  .progress-wrap {
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
+
+  .progress-label {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+
+  .progress {
+    height: 6px;
+  }
+
+  .best-line,
   .bottom-hint {
     display: none;
   }
@@ -624,13 +655,15 @@ body {
   .controls {
     flex-direction: row;
     flex-wrap: wrap;
+    gap: 4px;
   }
 
   .controls button {
     flex: 1 1 30%;
     width: auto;
-    padding: 10px 6px;
-    font-size: 13px;
+    padding: 6px 2px;
+    font-size: 11px;
+    border-radius: 8px;
   }
 
   #adSlotRight {
@@ -641,10 +674,10 @@ body {
     display: flex;
     position: fixed;
     left: 50%;
-    bottom: 8px;
+    bottom: 4px;
     transform: translateX(-50%);
     width: min(94vw, 360px);
-    height: 54px;
+    height: 44px;
     z-index: 40;
   }
 }

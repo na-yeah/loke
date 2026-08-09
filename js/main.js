@@ -782,18 +782,31 @@ function applyLangUI() {
 }
 
 /* ================== 布局 ================== */
+const raf = window.requestAnimationFrame
+  ? window.requestAnimationFrame.bind(window)
+  : fn => setTimeout(fn, 16);
+
 function layout() {
-  const rect = elBoardArea.getBoundingClientRect
-    ? elBoardArea.getBoundingClientRect()
-    : { width: elBoardArea.clientWidth || 460, height: elBoardArea.clientHeight || 460 };
-  let w = Math.min(rect.width - 8, rect.height - 8);
-  w = Math.max(w, 220);
-  elBoard.style.width = w + 'px';
-  elBoard.style.height = w + 'px';
-  const cw = elBoard.clientWidth;
-  tilePx = Math.floor((cw - (COLS - 1) * GAP) / COLS);
-  document.documentElement.style.setProperty('--tile', tilePx + 'px');
-  render();
+  const apply = () => {
+    const rect = elBoardArea.getBoundingClientRect
+      ? elBoardArea.getBoundingClientRect()
+      : { width: elBoardArea.clientWidth || 460, height: elBoardArea.clientHeight || 460 };
+    let w = Math.min(rect.width - 8, rect.height - 8);
+    w = Math.max(w, 200);
+    if (elBoard.style.width !== w + 'px') {
+      elBoard.style.width = w + 'px';
+      elBoard.style.height = w + 'px';
+    }
+    const cw = elBoard.clientWidth;
+    const tp = Math.floor((cw - (COLS - 1) * GAP) / COLS);
+    if (tp !== tilePx) {
+      tilePx = tp;
+      document.documentElement.style.setProperty('--tile', tilePx + 'px');
+      render();
+    }
+  };
+  apply();
+  raf(apply);
 }
 
 /* ================== 初始化 ================== */
