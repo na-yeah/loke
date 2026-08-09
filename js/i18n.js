@@ -35,8 +35,6 @@ const I18N = {
     "unlockTip": "共 {n} 关，自由选择",
     "scoreShort": "{score} 分",
     "menuProgress": "共 {n} 关，自由选择",
-    "adBadge": "广告 AD",
-    "adPlaceholder": "广告位预留",
     "allDone": "🎊 恭喜！你已通关全部 {n} 关！"
   },
   "zh-TW": {
@@ -72,8 +70,6 @@ const I18N = {
     "unlockTip": "共 {n} 關，自由選擇",
     "scoreShort": "{score} 分",
     "menuProgress": "共 {n} 關，自由選擇",
-    "adBadge": "廣告 AD",
-    "adPlaceholder": "廣告位預留",
     "allDone": "🎊 恭喜！你已通關全部 {n} 關！"
   },
   "en": {
@@ -109,8 +105,6 @@ const I18N = {
     "unlockTip": "{n} levels, play any",
     "scoreShort": "{score} pts",
     "menuProgress": "{n} levels, play any",
-    "adBadge": "Ad",
-    "adPlaceholder": "Ad slot",
     "allDone": "🎊 Congratulations! You beat all {n} levels!"
   },
   "ja": {
@@ -146,8 +140,6 @@ const I18N = {
     "unlockTip": "全 {n} レベル、自由に選択",
     "scoreShort": "{score} 点",
     "menuProgress": "全 {n} レベル、自由に選択",
-    "adBadge": "広告",
-    "adPlaceholder": "広告枠",
     "allDone": "🎊 おめでとう！全 {n} レベルをクリアしました！"
   },
   "ko": {
@@ -183,8 +175,6 @@ const I18N = {
     "unlockTip": "총 {n}개 레벨, 자유 선택",
     "scoreShort": "{score}점",
     "menuProgress": "총 {n}개 레벨, 자유 선택",
-    "adBadge": "광고",
-    "adPlaceholder": "광고 자리",
     "allDone": "🎊 축하합니다! 모든 {n}개 레벨을 클리어했습니다!"
   },
   "es": {
@@ -220,8 +210,6 @@ const I18N = {
     "unlockTip": "{n} niveles, juega cualquiera",
     "scoreShort": "{score} pts",
     "menuProgress": "{n} niveles, juega cualquiera",
-    "adBadge": "Publicidad",
-    "adPlaceholder": "Espacio publicitario",
     "allDone": "🎊 ¡Felicidades! ¡Completaste los {n} niveles!"
   },
   "fr": {
@@ -257,8 +245,6 @@ const I18N = {
     "unlockTip": "{n} niveaux, jouez librement",
     "scoreShort": "{score} pts",
     "menuProgress": "{n} niveaux, jouez librement",
-    "adBadge": "Publicité",
-    "adPlaceholder": "Emplacement publicitaire",
     "allDone": "🎊 Félicitations ! Vous avez terminé les {n} niveaux !"
   },
   "de": {
@@ -294,8 +280,6 @@ const I18N = {
     "unlockTip": "{n} Level, frei wählbar",
     "scoreShort": "{score} Pkt.",
     "menuProgress": "{n} Level, frei wählbar",
-    "adBadge": "Werbung",
-    "adPlaceholder": "Werbefläche",
     "allDone": "🎊 Glückwunsch! Du hast alle {n} Level geschafft!"
   },
   "it": {
@@ -331,8 +315,6 @@ const I18N = {
     "unlockTip": "{n} livelli, scegli liberamente",
     "scoreShort": "{score} pt",
     "menuProgress": "{n} livelli, scegli liberamente",
-    "adBadge": "Pubblicità",
-    "adPlaceholder": "Spazio pubblicitario",
     "allDone": "🎊 Congratulazioni! Hai completato tutti i {n} livelli!"
   },
   "pt": {
@@ -368,8 +350,6 @@ const I18N = {
     "unlockTip": "{n} níveis, jogue qualquer um",
     "scoreShort": "{score} pts",
     "menuProgress": "{n} níveis, jogue qualquer um",
-    "adBadge": "Anúncio",
-    "adPlaceholder": "Espaço publicitário",
     "allDone": "🎊 Parabéns! Você completou todos os {n} níveis!"
   },
   "ru": {
@@ -405,8 +385,6 @@ const I18N = {
     "unlockTip": "{n} уровней — любой на выбор",
     "scoreShort": "{score} очк.",
     "menuProgress": "{n} уровней — любой на выбор",
-    "adBadge": "Реклама",
-    "adPlaceholder": "Место для рекламы",
     "allDone": "🎊 Поздравляем! Вы прошли все {n} уровней!"
   },
   "ar": {
@@ -442,8 +420,6 @@ const I18N = {
     "unlockTip": "{n} مراحل، العب أي مرحلة",
     "scoreShort": "{score} نقطة",
     "menuProgress": "{n} مراحل، العب أي مرحلة",
-    "adBadge": "إعلان",
-    "adPlaceholder": "مساحة إعلانية",
     "allDone": "🎊 تهانينا! أكملت جميع المراحل {n}!"
   },
   "hi": {
@@ -479,8 +455,6 @@ const I18N = {
     "unlockTip": "{n} स्तर, कोई भी खेलें",
     "scoreShort": "{score} अंक",
     "menuProgress": "{n} स्तर, कोई भी खेलें",
-    "adBadge": "विज्ञापन",
-    "adPlaceholder": "विज्ञापन स्थान",
     "allDone": "🎊 बधाई! आपने सभी {n} स्तर पूरे कर लिए!"
   },
   "th": {
@@ -516,8 +490,6 @@ const I18N = {
     "unlockTip": "{n} ด่าน เลือกเล่นได้อิสระ",
     "scoreShort": "{score} แต้ม",
     "menuProgress": "{n} ด่าน เลือกเล่นได้อิสระ",
-    "adBadge": "โฆษณา",
-    "adPlaceholder": "พื้นที่โฆษณา",
     "allDone": "🎊 ยินดีด้วย! คุณผ่านครบ {n} ด่านแล้ว!"
   },
   "id": {
@@ -553,8 +525,6 @@ const I18N = {
     "unlockTip": "{n} level, main bebas",
     "scoreShort": "{score} poin",
     "menuProgress": "{n} level, main bebas",
-    "adBadge": "Iklan",
-    "adPlaceholder": "Ruang iklan",
     "allDone": "🎊 Selamat! Kamu menyelesaikan semua {n} level!"
   },
   "tr": {
@@ -590,8 +560,6 @@ const I18N = {
     "unlockTip": "{n} bölüm, dilediğini oyna",
     "scoreShort": "{score} puan",
     "menuProgress": "{n} bölüm, dilediğini oyna",
-    "adBadge": "Reklam",
-    "adPlaceholder": "Reklam alanı",
     "allDone": "🎊 Tebrikler! Tüm {n} bölümü bitirdin!"
   },
   "vi": {
@@ -627,8 +595,6 @@ const I18N = {
     "unlockTip": "{n} màn, chọn tự do",
     "scoreShort": "{score} điểm",
     "menuProgress": "{n} màn, chọn tự do",
-    "adBadge": "Quảng cáo",
-    "adPlaceholder": "Vị trí quảng cáo",
     "allDone": "🎊 Chúc mừng! Bạn đã qua cả {n} màn!"
   },
   "nl": {
@@ -664,8 +630,6 @@ const I18N = {
     "unlockTip": "{n} levels, speel vrij",
     "scoreShort": "{score} ptn",
     "menuProgress": "{n} levels, speel vrij",
-    "adBadge": "Advertentie",
-    "adPlaceholder": "Advertentieruimte",
     "allDone": "🎊 Gefeliciteerd! Je hebt alle {n} levels gehaald!"
   },
   "pl": {
@@ -701,8 +665,6 @@ const I18N = {
     "unlockTip": "{n} poziomów, graj dowolnie",
     "scoreShort": "{score} pkt",
     "menuProgress": "{n} poziomów, graj dowolnie",
-    "adBadge": "Reklama",
-    "adPlaceholder": "Miejsce na reklamę",
     "allDone": "🎊 Gratulacje! Ukończyłeś wszystkie {n} poziomy!"
   },
   "uk": {
@@ -738,8 +700,6 @@ const I18N = {
     "unlockTip": "{n} рівнів — грайте будь-який",
     "scoreShort": "{score} очк.",
     "menuProgress": "{n} рівнів — грайте будь-який",
-    "adBadge": "Реклама",
-    "adPlaceholder": "Місце для реклами",
     "allDone": "🎊 Вітаємо! Ви пройшли всі {n} рівнів!"
   }
 };
