@@ -1,117 +1,507 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta name="google-site-verification" content="LnA9MOuX2iwXlBYR7JUhf4TsOgq3OzFS_DrZLtAcI_E" />
-  <meta name="msvalidate.01" content="C3B3B4AC66B1B763DB04F3EEAC46999C" />
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="description" content="糖果消消乐 - 简单好玩的消除小游戏">
-  <title>糖果消消乐</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>七夕限定卡池</title>
+<style>
+  :root {
+    --bg: #16091c;
+    --bg2: #241030;
+    --pink: #ff6b9d;
+    --pink-dim: #b8477a;
+    --gold: #ffd45e;
+    --text: #f0e2ee;
+    --muted: #9c8aa8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: radial-gradient(ellipse at 50% 0%, #3a1440 0%, var(--bg) 55%, #0d050f 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  header { text-align: center; max-width: 640px; }
+  h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #ff9ec4, #ffd45e, #ff9ec4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .byline {
+    display: inline-block;
+    margin: 2px 0 12px;
+    font-size: 14px;
+    color: var(--gold);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 212, 94, .4);
+    padding-bottom: 2px;
+    transition: color .2s, border-color .2s;
+  }
+  .byline:hover { color: #fff; border-bottom-color: #fff; }
+  .sub { margin: 0; color: var(--pink); font-size: 15px; line-height: 1.7; }
+  .sub b { color: var(--gold); }
+  .deadline {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ---------- 转盘 ---------- */
+  .stage {
+    position: relative;
+    margin: 26px 0 18px;
+    width: min(92vw, 520px);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #ff6b9d, #ffd45e, #9d6bff, #ff6b9d);
+    padding: 6px;
+    box-shadow: 0 0 40px rgba(255, 107, 157, .35), inset 0 0 20px rgba(0,0,0,.5);
+  }
+  .ring::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: #120a16;
+  }
+  canvas {
+    position: relative;
+    width: calc(100% - 24px);
+    height: calc(100% - 24px);
+    border-radius: 50%;
+    /* 缓出曲线：起步快、末段极慢，模拟真实转盘的减速手感 */
+    transition: transform 5.2s cubic-bezier(.12, .78, .16, 1);
+    will-change: transform;
+  }
+  /* 顶部指针，固定不动，转盘转到它下面 */
+  .pointer {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 34px solid var(--gold);
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,.6));
+    z-index: 5;
+  }
+  .hub {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 21%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: radial-gradient(circle at 35% 30%, #ff9ec4, var(--pink) 45%, #a32d5c 100%);
+    color: #fff;
+    font-size: clamp(14px, 3.4vw, 18px);
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 0 4px;
+    box-shadow: 0 0 0 5px #120a16, 0 0 24px rgba(255,107,157,.7);
+    z-index: 4;
+    transition: transform .15s;
+  }
+  .hub:hover:not(:disabled) { transform: translate(-50%, -50%) scale(1.07); }
+  .hub:active:not(:disabled) { transform: translate(-50%, -50%) scale(.94); }
+  .hub:disabled { cursor: default; filter: grayscale(.5) brightness(.7); }
+
+  .tip { color: var(--muted); font-size: 13px; text-align: center; max-width: 520px; line-height: 1.7; }
+
+  /* ---------- 概率表 ---------- */
+  details {
+    margin-top: 26px;
+    width: min(94vw, 560px);
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  summary {
+    padding: 13px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--gold);
+    user-select: none;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 6px; }
+  td { padding: 7px 16px; border-top: 1px solid rgba(255,255,255,.06); }
+  td:last-child { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  tr.hit { background: rgba(255,212,94,.14); }
+  .tag {
+    display: inline-block;
+    min-width: 30px;
+    text-align: center;
+    padding: 1px 5px;
+    margin-right: 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .t-n  { background: #4a3057; color: #cbb6d6; }
+  .t-r  { background: #1f5f63; color: #8fe6ea; }
+  .t-ssr{ background: linear-gradient(90deg,#c99700,#ffd45e); color: #4a3000; }
+  .t-ur { background: linear-gradient(90deg,#ff2d95,#8a2dff,#2dd4ff); color: #fff; }
+
+  /* ---------- 结果弹窗 ---------- */
+  .mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 3, 12, .82);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .mask.show { display: flex; animation: fade .3s; }
+  @keyframes fade { from { opacity: 0 } }
+  .card {
+    position: relative;
+    width: min(90vw, 340px);
+    padding: 34px 24px 26px;
+    border-radius: 18px;
+    text-align: center;
+    background: linear-gradient(160deg, #33163f, #1b0b22);
+    border: 2px solid var(--pink-dim);
+    animation: pop .45s cubic-bezier(.2,1.5,.4,1);
+  }
+  @keyframes pop { from { transform: scale(.6); opacity: 0 } }
+  .card .rarity {
+    font-size: 13px;
+    letter-spacing: 4px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .card .name {
+    font-size: clamp(22px, 6vw, 30px);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 16px;
+    word-break: break-all;
+  }
+  .card .odds { font-size: 12px; color: var(--muted); }
+  .card button {
+    margin-top: 22px;
+    padding: 10px 34px;
+    border: none;
+    border-radius: 22px;
+    background: var(--pink);
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .card button:hover { background: #ff85ae; }
+
+  /* SSR / 隐藏款的特殊外观 */
+  .card.ssr { border-color: var(--gold); box-shadow: 0 0 60px rgba(255,212,94,.6); }
+  .card.ssr .name { color: var(--gold); text-shadow: 0 0 22px rgba(255,212,94,.8); }
+  .card.ur {
+    border-color: transparent;
+    background:
+      linear-gradient(160deg, #33163f, #1b0b22) padding-box,
+      linear-gradient(135deg, #ff2d95, #ffd45e, #2dd4ff, #8a2dff) border-box;
+    box-shadow: 0 0 80px rgba(255,45,149,.6);
+  }
+  .card.ur .name {
+    background: linear-gradient(90deg, #ff9ec4, #ffd45e, #7ef0ff, #ff9ec4);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: flow 3s linear infinite;
+  }
+  @keyframes flow { to { background-position: 300% 0 } }
+
+  .confetti {
+    position: fixed;
+    top: -12px;
+    width: 9px;
+    height: 14px;
+    z-index: 60;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(105vh) rotate(720deg); opacity: .1; }
+  }
+</style>
 </head>
 <body>
-  <div class="page">
-    <!-- 左栏：标题 / 积分 / 进度 -->
-    <aside class="side-panel left-panel">
-      <h1 class="title">🍬 <span data-i18n="appTitle">糖果消消乐</span></h1>
 
-      <div class="stats">
-        <div class="stat">
-          <span class="stat-label" data-i18n="statScore">得分</span>
-          <span id="score" class="stat-value">0</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label" data-i18n="statLevel">关卡</span>
-          <span id="level" class="stat-value">1</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label" data-i18n="statMoves">剩余步数</span>
-          <span id="moves" class="stat-value">30</span>
-        </div>
-      </div>
+<header>
+  <h1>🎉❤️七夕限定卡池开催❤️🎉</h1>
+  <div><a class="byline" href="https://space.bilibili.com/239619607" target="_blank" rel="noopener">B站 翔哥又困了</a></div>
+  <p class="sub">编辑发送“<b>咱俩试试？</b>”💌<br>即有机会获得限定 SSR“<b>好呀宝宝</b>”💕</p>
+  <p class="deadline">⭕ 抽取日期：2026 年 8 月 29 日之前</p>
+</header>
 
-      <div class="progress-wrap">
-        <div class="progress-label">
-          <span data-i18n="targetLabel">本关目标</span>
-          <span id="target">1000</span>
-          <span data-i18n="pointsUnit">分</span>
-        </div>
-        <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
-      </div>
+<div class="stage">
+  <div class="ring"></div>
+  <canvas id="wheel" width="1040" height="1040"></canvas>
+  <div class="pointer"></div>
+  <button class="hub" id="spin">抽卡</button>
+</div>
 
-      <div class="best-line">
-        <span data-i18n="bestLabel">单关最高</span>：<b id="best">0</b>
-      </div>
+<p class="tip">结果按<b>真实概率</b>抽取，转盘只负责转过去。<br>扇区面积为了看得见做了视觉放大，不代表中奖率。</p>
 
-      <p class="bottom-hint" data-i18n="bottomHint">点击选中糖果，再点相邻糖果交换，也可以直接滑动</p>
-    </aside>
+<details>
+  <summary>抽奖概率公示（点击展开）</summary>
+  <table id="table"></table>
+</details>
 
-    <!-- 中间：棋盘 -->
-    <main id="boardArea" class="board-area">
-      <div id="board" class="board" aria-label="游戏棋盘">
-        <div id="toast" class="toast">
-          <span id="toastPts" class="toast-pts"></span>
-          <span id="toastCombo" class="toast-combo"></span>
-        </div>
-      </div>
-    </main>
-
-    <!-- 右栏：按钮 + 广告 -->
-    <aside class="side-panel right-panel">
-      <div class="controls">
-        <button id="backBtn" type="button" data-i18n="btnBack">返回</button>
-        <button id="hintBtn" type="button" data-i18n="btnHint">提示</button>
-        <button id="shuffleBtn" type="button" data-i18n="btnShuffle">洗牌</button>
-        <button id="restartBtn" type="button" data-i18n="btnRestart">重开</button>
-        <button id="soundBtn" type="button" aria-label="声音开关">🔊</button>
-      </div>
-
-    </aside>
+<div class="mask" id="mask">
+  <div class="card" id="card">
+    <div class="rarity" id="rarity"></div>
+    <div class="name" id="rname"></div>
+    <div class="odds" id="odds"></div>
+    <button id="close">收下</button>
   </div>
+</div>
 
-  <!-- 主菜单 -->
-  <div id="menuModal" class="modal">
-    <div class="menu-card">
-      <h2 class="menu-title">🍬 <span data-i18n="appTitle">糖果消消乐</span></h2>
-      <p id="menuProgress" class="menu-progress"></p>
-      <button id="playBtn" type="button" class="menu-btn primary" data-i18n="btnPlay">开始游戏</button>
-      <button id="selectLevelBtn" type="button" class="menu-btn" data-i18n="btnSelectLevel">选择关卡</button>
-      <button id="langBtnMenu" type="button" class="menu-btn" data-i18n="btnLanguage">语言</button>
-    </div>
-  </div>
+<script>
+// ===== 奖池数据 =====
+// p 为公示概率（%），tier 决定配色与弹窗特效
+const PRIZES = [
+  { name: '滚你妈的',             p: 10,    tier: 'n' },
+  { name: '去你妈的',             p: 10,    tier: 'n' },
+  { name: '你也配？',             p: 10,    tier: 'n' },
+  { name: '傻逼二次元',           p: 10,    tier: 'n' },
+  { name: '癔症又犯了？',         p: 10,    tier: 'n' },
+  { name: '死男同真恶心',         p: 5,     tier: 'n' },
+  { name: '现在是幻想时刻',       p: 5,     tier: 'n' },
+  { name: '柚子厨滚出去',         p: 5,     tier: 'n' },
+  { name: '这是最后通牒',         p: 5,     tier: 'n' },
+  { name: '以后不要再和我扯上关系', p: 5,    tier: 'n' },
+  { name: '被拉黑+屏蔽',          p: 5,     tier: 'n' },
+  { name: '小男娘',               p: 5,     tier: 'n' },
+  { name: '随机的网图',           p: 2.5,   tier: 'r' },
+  { name: '随机的贴吧圣经',       p: 2.5,   tier: 'r' },
+  { name: '下次再说吧',           p: 2.5,   tier: 'r' },
+  { name: '你是个好人',           p: 2.5,   tier: 'r' },
+  { name: '我一直把你当好朋友',   p: 2.5,   tier: 'r' },
+  { name: '滚出去',               p: 2.49,  tier: 'n' },
+  { name: '好呀宝宝',             p: 0.009, tier: 'ssr' },
+  { name: '其实我也喜欢你好久了', p: 0.001, tier: 'ur' },
+];
 
-  <!-- 关卡选择 -->
-  <div id="levelModal" class="modal hidden">
-    <div class="menu-card">
-      <h2 class="menu-title" data-i18n="levelSelectTitle">选择关卡</h2>
-      <div id="levelGrid" class="level-grid"></div>
-      <p id="unlockTip" class="menu-progress"></p>
-      <button id="levelBackBtn" type="button" class="menu-btn secondary" data-i18n="btnBack">返回</button>
-    </div>
-  </div>
+const TIER_NAME = { n: 'N', r: 'R', ssr: 'SSR', ur: '隐藏款' };
+// 扇区底色：N 用四色暗紫粉循环，R 青绿，SSR 金，UR 洋红
+const N_COLORS = ['#4a2545', '#5c2c4d', '#3b2044', '#663257'];
+const TIER_COLOR = { r: '#1f5f63', ssr: '#a67c00', ur: '#c01e6e' };
 
-  <!-- 语言选择 -->
-  <div id="langModal" class="modal hidden">
-    <div class="menu-card">
-      <h2 class="menu-title" data-i18n="langTitle">选择语言</h2>
-      <div id="langGrid" class="lang-grid"></div>
-      <button id="langCloseBtn" type="button" class="menu-btn secondary" data-i18n="btnClose">关闭</button>
-    </div>
-  </div>
+// ===== 概率与角度 =====
+const totalP = PRIZES.reduce((s, x) => s + x.p, 0);
 
-  <!-- 结算弹窗 -->
-  <div id="modal" class="modal hidden">
-    <div class="modal-card">
-      <div id="modalTitle" class="modal-title"></div>
-      <div id="modalText" class="modal-text"></div>
-      <div class="modal-actions">
-        <button id="modalPrimaryBtn" type="button" class="modal-btn">继续</button>
-        <button id="modalSecondaryBtn" type="button" class="modal-btn ghost">返回选关</button>
-      </div>
-    </div>
-  </div>
+// 转盘上的摆放顺序（存的是 PRIZES 下标）。不按原序排，否则 10% 挤一坨、2.5% 挤一坨、
+// 两个稀有款还贴在一起，一眼就看出是按概率堆的。这里把各档手工交错开，纯视觉，不动概率。
+const LAYOUT = [0, 5, 12, 1, 6, 13, 18, 2, 7, 14, 3, 8, 15, 19, 4, 9, 16, 10, 17, 11];
+const slotOf = [];  // 反查：奖项下标 -> 它在转盘上的第几格
+LAYOUT.forEach((prizeIdx, slot) => { slotOf[prizeIdx] = slot; });
 
-  <script src="js/i18n.js"></script>
-  <script src="js/main.js"></script>
+// 视觉权重：小于 MIN_VIS 的扇区抬到 MIN_VIS，否则 0.001% 那格只有 0.0036 度，画出来等于不存在。
+// 这只影响画面，不参与抽取，两套权重必须分开。
+const MIN_VIS = 1.3;
+const visW = LAYOUT.map(i => Math.max(PRIZES[i].p, MIN_VIS));
+const totalVis = visW.reduce((s, w) => s + w, 0);
+
+// 累计角度：sectors[slot] = { start, end, mid }，0 度为 3 点钟方向，顺时针
+const sectors = [];
+let acc = 0;
+visW.forEach(w => {
+  const deg = w / totalVis * 360;
+  sectors.push({ start: acc, end: acc + deg, mid: acc + deg / 2 });
+  acc += deg;
+});
+
+// ===== 绘制转盘 =====
+const cv = document.getElementById('wheel');
+const ctx = cv.getContext('2d');
+const R = cv.width / 2;
+const rad = d => d * Math.PI / 180;
+
+function draw() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.translate(R, R);
+
+  LAYOUT.forEach((prizeIdx, slot) => {
+    const prize = PRIZES[prizeIdx];
+    const s = sectors[slot];
+    const color = TIER_COLOR[prize.tier] || N_COLORS[slot % N_COLORS.length];
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, R - 6, rad(s.start), rad(s.end));
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 高稀有度扇区加一圈亮边，让人一眼看到那条缝在哪
+    if (prize.tier === 'ssr' || prize.tier === 'ur') {
+      ctx.save();
+      ctx.strokeStyle = prize.tier === 'ssr' ? '#ffd45e' : '#ff5ec4';
+      ctx.lineWidth = 5;
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 18;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 文字沿半径方向排（躺着从内指向外），这样长名字也塞得下
+    ctx.save();
+    ctx.rotate(rad(s.mid));
+    ctx.textBaseline = 'middle';
+    const isHigh = prize.tier === 'ssr' || prize.tier === 'ur';
+    ctx.fillStyle = isHigh ? '#fff' : '#e6d4e4';
+    // 径向排字时"字高"占的是弧长，而越靠近圆心弧长越小，窄格子的字会压到邻居格上。
+    // 由 2πr·θ/360 >= 字号（r 取文字最内端 = 外端 - 字数×字号）解出字号上限。
+    const outerR = R - 34;
+    const k = 2 * Math.PI * (s.end - s.start) / 360;
+    const fit = k * outerR / (1 + k * prize.name.length);
+    const fs = Math.round(Math.max(16, Math.min(prize.name.length > 8 ? 30 : 34, fit)));
+    ctx.font = `${isHigh ? '700 ' : ''}${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    if (isHigh) {
+      ctx.shadowColor = 'rgba(0,0,0,.9)';
+      ctx.shadowBlur = 8;
+    }
+    // 中线落在 90~270 度（左半圈）时，旋转后的坐标系上下颠倒，文字会倒着写。
+    // 再转 180 度把字掰正，代价是这半圈的字从外缘往里读——所有径向转盘都这样。
+    if (s.mid > 90 && s.mid < 270) {
+      ctx.rotate(Math.PI);
+      ctx.textAlign = 'left';
+      ctx.fillText(prize.name, -outerR, 0);
+    } else {
+      ctx.textAlign = 'right';
+      ctx.fillText(prize.name, outerR, 0);
+    }
+    ctx.restore();
+  });
+
+  ctx.translate(-R, -R);
+}
+draw();
+
+// ===== 抽取 =====
+// 按真实概率累加抽样：在 [0, totalP) 上取随机点，落在谁的区间就是谁
+function pick() {
+  let r = Math.random() * totalP;
+  for (let i = 0; i < PRIZES.length; i++) {
+    r -= PRIZES[i].p;
+    if (r < 0) return i;
+  }
+  return PRIZES.length - 1;
+}
+
+const btn = document.getElementById('spin');
+const mask = document.getElementById('mask');
+let rotation = 0;   // 累计旋转角度，只增不减，避免每次抽卡都倒着转回去
+let spinning = false;
+
+btn.addEventListener('click', () => {
+  if (spinning) return;
+  spinning = true;
+  btn.disabled = true;
+  btn.textContent = '···';
+  clearHit();
+
+  const idx = pick();
+  const s = sectors[slotOf[idx]];
+
+  // 指针固定在 12 点（即 270 度方向）。转盘转 rotation 度后，扇区中线到达 mid + rotation，
+  // 要它停在指针下方 => mid + rotation ≡ 270 (mod 360)。
+  // 再叠加扇区内 ±38% 的随机偏移，免得每次都精准停在正中间，看着假。
+  const jitter = (Math.random() - 0.5) * (s.end - s.start) * 0.76;
+  const target = 270 - (s.mid + jitter);
+  const base = rotation % 360;
+  // 补足到目标角度所需的增量，再加 6 整圈
+  rotation += 360 * 6 + ((target - base) % 360 + 360) % 360;
+
+  cv.style.transform = `rotate(${rotation}deg)`;
+  // 按钮状态先恢复再弹结果，万一弹窗那段出错也不会把按钮永远卡在转动中
+  setTimeout(() => {
+    spinning = false;
+    btn.disabled = false;
+    btn.textContent = '再转一次';
+    showResult(idx);
+  }, 5300);
+});
+
+// ===== 结果弹窗 =====
+function showResult(idx) {
+  const prize = PRIZES[idx];
+  document.getElementById('rarity').textContent = TIER_NAME[prize.tier];
+  document.getElementById('rname').textContent = prize.name;
+  document.getElementById('odds').textContent = `出货率 ${prize.p}%`;
+
+  const card = document.getElementById('card');
+  card.className = 'card ' + prize.tier;
+  document.getElementById('rarity').style.color =
+    prize.tier === 'ssr' ? '#ffd45e' : prize.tier === 'ur' ? '#ff8ad4' : 'var(--muted)';
+
+  mask.classList.add('show');
+  markHit(idx);
+  if (prize.tier === 'ssr' || prize.tier === 'ur') confetti();
+}
+
+document.getElementById('close').addEventListener('click', () => mask.classList.remove('show'));
+
+function confetti() {
+  const colors = ['#ff6b9d', '#ffd45e', '#7ef0ff', '#c78aff', '#fff'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[i % colors.length];
+    el.style.animationDuration = (2 + Math.random() * 1.8) + 's';
+    el.style.animationDelay = (Math.random() * 0.7) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+}
+
+// ===== 概率表 =====
+const table = document.getElementById('table');
+table.innerHTML = PRIZES.map((x, i) => `
+  <tr data-i="${i}">
+    <td><span class="tag t-${x.tier}">${TIER_NAME[x.tier]}</span>${x.name}</td>
+    <td>${x.p}%</td>
+  </tr>`).join('');
+
+function markHit(i) {
+  const tr = table.querySelector(`tr[data-i="${i}"]`);
+  if (tr) tr.classList.add('hit');
+}
+function clearHit() {
+  table.querySelectorAll('tr.hit').forEach(tr => tr.classList.remove('hit'));
+}
+</script>
+
 </body>
 </html>
