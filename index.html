@@ -358,21 +358,57 @@
       fill.style.background = color;
       label.textContent = `${text} (${Math.round(entropy)} bits)`;
     }
+function copyPassword() {
+  const text = document.getElementById('passwordText').textContent;
+  if (text === '点击生成') return;
 
-    function copyPassword() {
-      const text = document.getElementById('passwordText').textContent;
-      if (text === '点击生成') return;
+  // 优先使用现代 Clipboard API（HTTPS / localhost 环境）
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      showCopied();
+    }).catch(err => {
+      console.error('Clipboard API 复制失败:', err);
+      fallbackCopy(text);
+    });
+  } else {
+    // 降级方案：file:// 协议或旧浏览器走 execCommand
+    fallbackCopy(text);
+  }
+}
 
-      navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copyBtn');
-        btn.textContent = '已复制';
-        btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = '复制';
-          btn.classList.remove('copied');
-        }, 1500);
-      });
+function fallbackCopy(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  try {
+    const ok = document.execCommand('copy');
+    if (ok) {
+      showCopied();
+    } else {
+      alert('复制失败，请手动复制');
     }
+  } catch (err) {
+    console.error('execCommand 复制失败:', err);
+    alert('复制失败，请手动复制');
+  }
+  document.body.removeChild(textarea);
+}
+
+function showCopied() {
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = '已复制';
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.textContent = '复制';
+    btn.classList.remove('copied');
+  }, 1500);
+}
+
   </script>
 </body>
 </html>
